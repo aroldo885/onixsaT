@@ -7,22 +7,22 @@ const { xml2js } = require("xml-js");
 
 // ====== ENVs obrigatórias (credenciais/endpoint) ======
 const WS_URL = process.env.ONIXSAT_WS_URL;
-const LOGIN  = process.env.ONIXSAT_LOGIN;
-const SENHA  = process.env.ONIXSAT_SENHA;
+const LOGIN = process.env.ONIXSAT_LOGIN;
+const SENHA = process.env.ONIXSAT_SENHA;
 
 // ====== Pastas/arquivos de saída ======
-const OUT_DIR    = path.join(__dirname, "..", "saida");
+const OUT_DIR = path.join(__dirname, "..", "saida");
 const STATE_FILE = path.join(OUT_DIR, "estado.json");
-const POS_JSONL  = path.join(OUT_DIR, "posicoes.jsonl");
-const VIO_JSONL  = path.join(OUT_DIR, "violacoes.jsonl");
+const POS_JSONL = path.join(OUT_DIR, "posicoes.jsonl");
+const VIO_JSONL = path.join(OUT_DIR, "violacoes.jsonl");
 
 // ====== Intervalos e limites ======
 // Busca normal: FIXO em 5 minutos
 const INTERVAL_MS = 300000; // 5 min
 
 // Backoff para throttle "tempo mínimo" (resposta da ONIX)
-const BACKOFF_INIT   = 300000; // 5 min
-const BACKOFF_MAX    = Number(process.env.ONIXSAT_BACKOFF_MAX_MS ?? 600000); // 10 min
+const BACKOFF_INIT = 300000; // 5 min
+const BACKOFF_MAX = Number(process.env.ONIXSAT_BACKOFF_MAX_MS ?? 600000); // 10 min
 const BACKOFF_FACTOR = Number(process.env.ONIXSAT_BACKOFF_FACTOR ?? 2);
 
 // Limite “configurável” (fallback gravado no registro)
@@ -44,8 +44,11 @@ if (!fs.existsSync(VIO_JSONL)) fs.writeFileSync(VIO_JSONL, "", "utf8");
 
 // ====== Utilitários ======
 function loadState() {
-  try { return JSON.parse(fs.readFileSync(STATE_FILE, "utf8")); }
-  catch { return { lastMid: "1" }; }
+  try {
+    return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
+  } catch {
+    return { lastMid: "1" };
+  }
 }
 function saveState(s) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(s, null, 2), "utf8");
@@ -111,11 +114,13 @@ function isExcessoOficial(m) {
 
 // ====== Loop com backoff inteligente ======
 let backoffMs = 0;
-async function esperar(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function esperar(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 async function tick() {
   const state = loadState();
-  const mid   = state.lastMid ?? "1";
+  const mid = state.lastMid ?? "1";
   console.log("\nBuscando a partir de mId =", mid);
 
   const msgs = await fetchMensagens(mid);
@@ -125,7 +130,9 @@ async function tick() {
   }
 
   let maxMid = Number(mid);
-  let posCount = 0, vioCount = 0, excessoCount = 0;
+  let posCount = 0,
+    vioCount = 0,
+    excessoCount = 0;
 
   for (const m of msgs) {
     const mId = toText(m.mId);
@@ -138,27 +145,55 @@ async function tick() {
     if (!veiID || !dt || lat === null || lon === null) continue;
 
     const mun = toText(m.mun) ?? "";
-    const uf  = toText(m.uf) ?? "";
-    const via = (toText(m.rod) || toText(m.rua) || "");
-    const evtG= toText(m.evtG) ?? "";
+    const uf = toText(m.uf) ?? "";
+    const via = toText(m.rod) || toText(m.rua) || "";
+    const evtG = toText(m.evtG) ?? "";
     const alrtTelem = toText(m.alrtTelem) ?? "";
     const rpm = toText(m.rpm) ?? "";
 
     // posições
-    fs.appendFileSync(POS_JSONL, JSON.stringify({
-      mId, veiID, dt, lat, lon, vel, mun, uf, via, evtG, alrtTelem, rpm
-    }) + "\n", "utf8");
+    fs.appendFileSync(
+      POS_JSONL,
+      JSON.stringify({
+        mId,
+        veiID,
+        dt,
+        lat,
+        lon,
+        vel,
+        mun,
+        uf,
+        via,
+        evtG,
+        alrtTelem,
+        rpm,
+      }) + "\n",
+      "utf8"
+    );
     posCount++;
 
     // violações (qualquer alrtTelem)
     if (isViolacaoOficial(m)) {
-      fs.appendFileSync(VIO_JSONL, JSON.stringify({
-        tipo: isExcessoOficial(m) ? "EXCESSO_VELOCIDADE" : "VIOLACAO",
-        mId, veiID, dt, lat, lon,
-        vel, limite: SPEED_LIMIT,
-        mun, uf, via,
-        evtG, alrtTelem, rpm
-      }) + "\n", "utf8");
+      fs.appendFileSync(
+        VIO_JSONL,
+        JSON.stringify({
+          tipo: isExcessoOficial(m) ? "EXCESSO_VELOCIDADE" : "VIOLACAO",
+          mId,
+          veiID,
+          dt,
+          lat,
+          lon,
+          vel,
+          limite: SPEED_LIMIT,
+          mun,
+          uf,
+          via,
+          evtG,
+          alrtTelem,
+          rpm,
+        }) + "\n",
+        "utf8"
+      );
       vioCount++;
       if (isExcessoOficial(m)) excessoCount++;
     }
@@ -170,17 +205,28 @@ async function tick() {
   state.lastMid = String(maxMid);
   saveState(state);
   console.log(
-    "Posições:", posCount,
-    "| Violações:", vioCount,
-    "| Excesso:", excessoCount,
-    "| Próximo mId =", state.lastMid
+    "Posições:",
+    posCount,
+    "| Violações:",
+    vioCount,
+    "| Excesso:",
+    excessoCount,
+    "| Próximo mId =",
+    state.lastMid
   );
 }
 
 (async () => {
-  console.log("✅ Coletor (posições + violações) iniciado.",
-              "Intervalo:", INTERVAL_MS, "ms",
-              "| Backoff:", BACKOFF_INIT, "->", BACKOFF_MAX);
+  console.log(
+    "✅ Coletor (posições + violações) iniciado.",
+    "Intervalo:",
+    INTERVAL_MS,
+    "ms",
+    "| Backoff:",
+    BACKOFF_INIT,
+    "->",
+    BACKOFF_MAX
+  );
   while (true) {
     try {
       await tick();

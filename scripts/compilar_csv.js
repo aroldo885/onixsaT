@@ -17,7 +17,7 @@ const rows = [cols.join(";")];
 
 for (const line of lines) {
   const o = JSON.parse(line);
-  rows.push(cols.map((c) => (o[c] ?? "")).join(";"));
+  rows.push(cols.map((c) => o[c] ?? "").join(";"));
 }
 
 fs.writeFileSync(OUT_CSV, rows.join("\n"), "utf8");

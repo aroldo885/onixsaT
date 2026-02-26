@@ -1,122 +1,100 @@
-const _         = require( "lodash" );
-const moment    = require( "moment" );
-const path      = require( "path" );
-const fs        = require( "fs" );
+const _ = require("lodash");
+const moment = require("moment");
+const path = require("path");
+const fs = require("fs");
 
-const gerarDatas = ( geraDeHoraEmHora ) =>{
+const gerarDatas = (geraDeHoraEmHora) => {
+  try {
+    let dataInicio = process.env.DATA_INICIO_PROCESSAMENTO;
+    let dataFim = process.env.DATA_FIM_PROCESSAMENTO;
+    let datas = [];
 
-    try{
+    dataInicio = _.isEmpty(dataInicio)
+      ? moment(moment().locale("pt-br"), "YYYY-MM-DD HH:mm:ss")
+      : moment(dataInicio, "YYYY-MM-DD HH:mm:ss");
+    dataFim = _.isEmpty(dataFim)
+      ? moment(moment().locale("pt-br"), "YYYY-MM-DD HH:mm:ss")
+      : moment(dataFim, "YYYY-MM-DD HH:mm:ss");
 
-        let dataInicio  = process.env.DATA_INICIO_PROCESSAMENTO;
-        let dataFim     = process.env.DATA_FIM_PROCESSAMENTO;
-        let datas       = [];
+    dataInicio = moment(dataInicio).subtract(1, "hours");
 
-        dataInicio  = _.isEmpty( dataInicio ) ? moment( moment().locale( "pt-br" ), "YYYY-MM-DD HH:mm:ss" ) : moment( dataInicio, "YYYY-MM-DD HH:mm:ss" );
-        dataFim     = _.isEmpty( dataFim )    ? moment( moment().locale( "pt-br" ), "YYYY-MM-DD HH:mm:ss" ) : moment( dataFim, "YYYY-MM-DD HH:mm:ss" );
+    if (geraDeHoraEmHora) {
+      // Enquanto a diferença em horas da data fim para início for >= 1 continua gerando as datas
+      while (dataFim.diff(dataInicio, "hours") >= 1) {
+        let dataFimPesquisa = moment(dataInicio).add(1, "hours");
 
-        dataInicio  = moment( dataInicio ).subtract( 1, "hours" );
+        datas.push({
+          dataInicial: dataInicio.format("DD/MM/YYYY HH:mm:ss"),
+          dataFinal: dataFimPesquisa.format("DD/MM/YYYY HH:mm:ss"),
+        });
 
-        if( geraDeHoraEmHora ){
-
-            // Enquanto a diferença em horas da data fim para início for >= 1 continua gerando as datas
-            while( dataFim.diff( dataInicio, "hours" ) >= 1 ){
-    
-                let dataFimPesquisa = moment( dataInicio ).add( 1, "hours" );
-    
-                datas.push( {
-                    dataInicial: dataInicio.format( "DD/MM/YYYY HH:mm:ss"  ),
-                    dataFinal: dataFimPesquisa.format( "DD/MM/YYYY HH:mm:ss" )
-                } );
-    
-                // Incrementa 1 hora
-                dataInicio.add( 1, "hours" );
-    
-            }
-
-        } else{
-
-            datas.push( {
-                dataInicial: dataInicio.format( "DD/MM/YYYY HH:mm:ss"  ),
-                dataFinal: dataFim.format( "DD/MM/YYYY HH:mm:ss" )
-            } );
-
-        }
-
-        return( datas );
-
-    } catch( error ){ throw new Error( error ); }
-
-};
-
-const capitalizar = ( string ) =>{
-
-    let textoCapitalizado = "";
-
-    if( !_.isEmpty( string ) ){
-
-        string = string.toLowerCase().trim();
-        textoCapitalizado = string.replace( /\b\w/g, ( letra ) => letra.toUpperCase() ); 
-
+        // Incrementa 1 hora
+        dataInicio.add(1, "hours");
+      }
+    } else {
+      datas.push({
+        dataInicial: dataInicio.format("DD/MM/YYYY HH:mm:ss"),
+        dataFinal: dataFim.format("DD/MM/YYYY HH:mm:ss"),
+      });
     }
 
-    return textoCapitalizado;
-
+    return datas;
+  } catch (error) {
+    throw new Error(error);
+  }
 };
 
-const gravarErrorLog = ( errors ) =>{
+const capitalizar = (string) => {
+  let textoCapitalizado = "";
 
-    const nomeArquivoDeLog  = `${moment().locale( "pt-br" ).format( "DD-MM-YYYY" )}.txt`
-    const caminhoArquivoLog = path.join( process.env.SCHEDULE_PASTA_LOG, `${nomeArquivoDeLog}` );
+  if (!_.isEmpty(string)) {
+    string = string.toLowerCase().trim();
+    textoCapitalizado = string.replace(/\b\w/g, (letra) => letra.toUpperCase());
+  }
 
-    if( !fs.existsSync( caminhoArquivoLog ) ) fs.writeFileSync( caminhoArquivoLog, "", { encoding: "utf8" } );
+  return textoCapitalizado;
+};
 
-    if( fs.existsSync( caminhoArquivoLog ) ){
+const gravarErrorLog = (errors) => {
+  const nomeArquivoDeLog = `${moment().locale("pt-br").format("DD-MM-YYYY")}.txt`;
+  const caminhoArquivoLog = path.join(process.env.SCHEDULE_PASTA_LOG, `${nomeArquivoDeLog}`);
 
-        if( Array.isArray( errors ) ){
+  if (!fs.existsSync(caminhoArquivoLog))
+    fs.writeFileSync(caminhoArquivoLog, "", { encoding: "utf8" });
 
-            for( error of errors ){
+  if (fs.existsSync(caminhoArquivoLog)) {
+    if (Array.isArray(errors)) {
+      for (const err of errors) {
+        let mensagem = `[${moment().locale("pt-br").format("DD/MM/YYYY HH:mm:ss")}] - ${err} \n`;
 
-                let mensagem = `[${moment().locale( "pt-br" ).format( "DD/MM/YYYY HH:mm:ss" )}] - ${error} \n`;
-    
-                fs.writeFileSync( caminhoArquivoLog, mensagem, { encoding: "utf8", flag: "a+" } );
-    
-            }
+        fs.writeFileSync(caminhoArquivoLog, mensagem, { encoding: "utf8", flag: "a+" });
+      }
+    } else {
+      let mensagem = `[${moment().locale("pt-br").format("DD/MM/YYYY HH:mm:ss")}] - ${errors} \n`;
 
-        } else{
-
-            let mensagem = `[${moment().locale( "pt-br" ).format( "DD/MM/YYYY HH:mm:ss" )}] - ${errors} \n`;
-    
-            fs.writeFileSync( caminhoArquivoLog, mensagem, { encoding: "utf8", flag: "a+" } );
-
-        }
-
+      fs.writeFileSync(caminhoArquivoLog, mensagem, { encoding: "utf8", flag: "a+" });
     }
+  }
 
-    return;
-
+  return;
 };
 
-const tratarMsgErroApi = ( error, msgPadrao ) =>{
+const tratarMsgErroApi = (error, msgPadrao) => {
+  let mensagem = "";
 
-    let mensagem = "";
+  if (!_.isEmpty(error.response)) {
+    if (error.response.hasOwnProperty("data")) {
+      mensagem =
+        error.response.data.message !== undefined ? error.response.data.message : msgPadrao;
+    } else mensagem = msgPadrao;
+  } else mensagem = error.message;
 
-    if( !_.isEmpty( error.response ) ){
-
-        if( error.response.hasOwnProperty( "data" ) ){
-
-            mensagem = error.response.data.message !== undefined ? error.response.data.message : msgPadrao;
-
-        } else mensagem = msgPadrao;
-
-    } else mensagem = error.message;
-
-    return mensagem;
-
+  return mensagem;
 };
 
 module.exports = {
-    gerarDatas,
-    capitalizar,
-    gravarErrorLog,
-    tratarMsgErroApi
+  gerarDatas,
+  capitalizar,
+  gravarErrorLog,
+  tratarMsgErroApi,
 };

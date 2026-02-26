@@ -29,7 +29,11 @@ function unzipOrXml(buffer) {
     const zip = new AdmZip(buffer);
     const entries = zip.getEntries();
     if (!entries.length) throw new Error("ZIP vazio");
-    return { xmlString: entries[0].getData().toString("utf8"), zipped: true, entry: entries[0].entryName };
+    return {
+      xmlString: entries[0].getData().toString("utf8"),
+      zipped: true,
+      entry: entries[0].entryName,
+    };
   } catch {
     return { xmlString: buffer.toString("utf8"), zipped: false, entry: null };
   }
@@ -71,10 +75,16 @@ function toText(node) {
   let vehiclesArray = null;
   for (const k of Object.keys(root || {})) {
     const v = root[k];
-    if (Array.isArray(v)) { vehiclesArray = v; break; }
+    if (Array.isArray(v)) {
+      vehiclesArray = v;
+      break;
+    }
     if (v && typeof v === "object") {
       for (const kk of Object.keys(v)) {
-        if (Array.isArray(v[kk])) { vehiclesArray = v[kk]; break; }
+        if (Array.isArray(v[kk])) {
+          vehiclesArray = v[kk];
+          break;
+        }
       }
     }
     if (vehiclesArray) break;

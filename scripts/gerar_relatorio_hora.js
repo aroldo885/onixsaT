@@ -12,10 +12,10 @@ if (!fs.existsSync(IN_FILE)) {
 
 const lines = fs.readFileSync(IN_FILE, "utf8").trim().split("\n").filter(Boolean);
 
-const registros = lines.map(l => JSON.parse(l));
+const registros = lines.map((l) => JSON.parse(l));
 
 // normalizar data e extrair hora
-registros.forEach(r => {
+registros.forEach((r) => {
   const d = new Date(r.dt);
   r.data = d.toISOString().split("T")[0];
   r.hora = d.getHours().toString().padStart(2, "0") + ":00";
@@ -37,23 +37,13 @@ const header = [
   "Velocidade",
   "Latitude",
   "Longitude",
-  "Via"
+  "Via",
 ];
 
 const rows = [header.join(";")];
 
-registros.forEach(r => {
-  rows.push([
-    r.veiID,
-    r.data,
-    r.hora,
-    r.mun,
-    r.uf,
-    r.vel,
-    r.lat,
-    r.lon,
-    r.via
-  ].join(";"));
+registros.forEach((r) => {
+  rows.push([r.veiID, r.data, r.hora, r.mun, r.uf, r.vel, r.lat, r.lon, r.via].join(";"));
 });
 
 fs.writeFileSync(OUT_FILE, rows.join("\n"), "utf8");

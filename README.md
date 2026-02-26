@@ -86,6 +86,16 @@ OnixSat API → Jobs Bree (equipamento, posição) → Orquestrador API
 - Node.js 14+
 - npm ou yarn
 
+## Linting e Formatação
+
+O projeto utiliza ESLint, Prettier e EditorConfig:
+
+- **ESLint** — Regras de qualidade (`.eslintrc.json`)
+- **Prettier** — Formatação consistente (`.prettierrc`)
+- **EditorConfig** — Configuração básica de editor (`.editorconfig`)
+
+Após `npm install`, execute `npm run lint` e `npm run format:check` para validar o código.
+
 ## Configuração
 
 1. Copie o arquivo de exemplo e preencha as credenciais:
@@ -195,15 +205,15 @@ Após iniciar o servidor:
 
 ### Parâmetros da API `/api/excessos`
 
-| Parâmetro    | Descrição                                    | Exemplo      |
-|-------------|-----------------------------------------------|--------------|
-| `today`     | 1 = apenas excessos de hoje                  | `today=1`    |
-| `company80` | 1 = regra empresa: velocidade > 80 km/h      | `company80=1`|
-| `lastHours` | Últimas N horas                              | `lastHours=6`|
-| `placa`     | Filtrar por placa                             | `placa=ABC1234`|
-| `speedMin`  | Velocidade mínima (km/h) para considerar excesso | `speedMin=81`|
-| `stats`     | 1 = incluir estatísticas na resposta          | `stats=1`    |
-| `dedupe`    | 1 = deduplicar por mId                        | `dedupe=1`   |
+| Parâmetro   | Descrição                                        | Exemplo         |
+| ----------- | ------------------------------------------------ | --------------- |
+| `today`     | 1 = apenas excessos de hoje                      | `today=1`       |
+| `company80` | 1 = regra empresa: velocidade > 80 km/h          | `company80=1`   |
+| `lastHours` | Últimas N horas                                  | `lastHours=6`   |
+| `placa`     | Filtrar por placa                                | `placa=ABC1234` |
+| `speedMin`  | Velocidade mínima (km/h) para considerar excesso | `speedMin=81`   |
+| `stats`     | 1 = incluir estatísticas na resposta             | `stats=1`       |
+| `dedupe`    | 1 = deduplicar por mId                           | `dedupe=1`      |
 
 Exemplo de diagnóstico:
 
@@ -215,15 +225,15 @@ http://localhost:8081/api/excessos?lastHours=6&officialOnly=0&dedupe=0&speedMin=
 
 Execute manualmente após haver dados em `saida/posicoes.jsonl`:
 
-| Script                    | Saída                               | Descrição                        |
-|---------------------------|-------------------------------------|----------------------------------|
-| `node scripts/gerar_relatorio_hora.js` | `saida/relatorio_hora.csv`         | Posições por veículo/hora (CSV)  |
-| `node scripts/gerar_relatorio_hora_xlsx.js` | `saida/relatorio_posicoes_hora_a_hora.xlsx` | Mesmo relatório em Excel |
-| `node scripts/gerar_relatorio_com_placa_xlsx.js` | `saida/relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx` | Excel com mapeamento de placa |
-| `node scripts/gerar_mapa_calor.js` | `saida/mapa_calor.html`            | Heatmap de posições              |
-| `node scripts/gerar_mapa_calor_excesso80.js` | `saida/mapa_calor_excesso_80.html` | Heatmap de excessos (>80)        |
-| `node scripts/compilar_csv.js` | `saida/historico_posicoes.csv`     | Histórico bruto em CSV           |
-| `node scripts/check-data.js` | (console)                          | Diagnóstico rápido dos dados     |
+| Script                                           | Saída                                                 | Descrição                       |
+| ------------------------------------------------ | ----------------------------------------------------- | ------------------------------- |
+| `node scripts/gerar_relatorio_hora.js`           | `saida/relatorio_hora.csv`                            | Posições por veículo/hora (CSV) |
+| `node scripts/gerar_relatorio_hora_xlsx.js`      | `saida/relatorio_posicoes_hora_a_hora.xlsx`           | Mesmo relatório em Excel        |
+| `node scripts/gerar_relatorio_com_placa_xlsx.js` | `saida/relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx` | Excel com mapeamento de placa   |
+| `node scripts/gerar_mapa_calor.js`               | `saida/mapa_calor.html`                               | Heatmap de posições             |
+| `node scripts/gerar_mapa_calor_excesso80.js`     | `saida/mapa_calor_excesso_80.html`                    | Heatmap de excessos (>80)       |
+| `node scripts/compilar_csv.js`                   | `saida/historico_posicoes.csv`                        | Histórico bruto em CSV          |
+| `node scripts/check-data.js`                     | (console)                                             | Diagnóstico rápido dos dados    |
 
 Filtros opcionais via `.env`:
 
@@ -241,15 +251,19 @@ Arquivos em `assets/leaflet/`: `leaflet.css` e `leaflet.js`.
 
 ## Referência de Comandos NPM
 
-| Comando                   | Descrição                               |
-|---------------------------|-----------------------------------------|
-| `npm start`               | Scheduler Bree (jobs Orquestrador)      |
-| `npm run dev`             | Scheduler com nodemon --inspect        |
-| `npm run onixsat:veiculos`| Testa busca de veículos + gera map_veiculos |
-| `npm run onixsat:coletor` | Coletor somente posições               |
-| `npm run onixsat:coletor:all` | Coletor posições + violações      |
-| `npm run onixsat:server`   | Servidor mapa + API                    |
-| `npm run onixsat:all`     | Coletor + servidor em paralelo         |
+| Comando                       | Descrição                                   |
+| ----------------------------- | ------------------------------------------- |
+| `npm start`                   | Scheduler Bree (jobs Orquestrador)          |
+| `npm run dev`                 | Scheduler com nodemon --inspect             |
+| `npm run onixsat:veiculos`    | Testa busca de veículos + gera map_veiculos |
+| `npm run onixsat:coletor`     | Coletor somente posições                    |
+| `npm run onixsat:coletor:all` | Coletor posições + violações                |
+| `npm run onixsat:server`      | Servidor mapa + API                         |
+| `npm run onixsat:all`         | Coletor + servidor em paralelo              |
+| `npm run lint`                | Executa ESLint                              |
+| `npm run lint:fix`            | ESLint com auto-fix                         |
+| `npm run format`              | Formata código com Prettier                 |
+| `npm run format:check`        | Verifica formatação sem alterar             |
 
 ## Troubleshooting
 

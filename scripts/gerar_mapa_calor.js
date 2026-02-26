@@ -45,7 +45,8 @@ for (const line of lines) {
 }
 
 // centro do mapa: média simples
-let centerLat = -23.0, centerLon = -46.6;
+let centerLat = -23.0,
+  centerLon = -46.6;
 if (points.length) {
   centerLat = points.reduce((s, p) => s + p[0], 0) / points.length;
   centerLon = points.reduce((s, p) => s + p[1], 0) / points.length;

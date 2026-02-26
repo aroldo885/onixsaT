@@ -22,88 +22,112 @@ const MAP_FILE = path.join(ROOT, "saida", "map_veiculos.json");
 // Defaults (mantidos)
 // -------------------------------------------------------
 const MAX_POINTS_DEFAULT = Number(process.env.EXCESSOS_MAX_POINTS ?? 3000);
-const SPEED_MIN_DEFAULT  = Number(process.env.SPEED_MIN ?? 81);
-const DEDUPE_BY_MID_DEF  = String(process.env.DEDUPE_BY_MID ?? "0") === "1";
-const OFFICIAL_ONLY_DEF  = String(process.env.OFFICIAL_ONLY ?? "1") === "1";
+const SPEED_MIN_DEFAULT = Number(process.env.SPEED_MIN ?? 81);
+const DEDUPE_BY_MID_DEF = String(process.env.DEDUPE_BY_MID ?? "0") === "1";
+const OFFICIAL_ONLY_DEF = String(process.env.OFFICIAL_ONLY ?? "1") === "1";
 const LAST_HOURS_DEFAULT = Number(process.env.LAST_HOURS_DEFAULT ?? 24);
 
 // -------------------------------------------------------
-app.use((_, res, next) => { 
-  res.setHeader("Access-Control-Allow-Origin", "*"); 
-  next(); 
+app.use((_, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
 });
 
 // -------------------------------------------------------
 // Utilitários
 // -------------------------------------------------------
-function loadJson(p,fallback){ try{ return JSON.parse(fs.readFileSync(p,"utf8")) }catch{ return fallback }}
-function safeNumber(x){ const n = Number(String(x??"").replace(",",".")); return Number.isFinite(n)?n:NaN }
-function parseBool(v,def=false){
-  if(v==null) return def;
-  const s=String(v).trim().toLowerCase();
-  if(["1","true","t","yes","y","on"].includes(s)) return true;
-  if(["0","false","f","no","n","off"].includes(s)) return false;
+function loadJson(p, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+function safeNumber(x) {
+  const n = Number(String(x ?? "").replace(",", "."));
+  return Number.isFinite(n) ? n : NaN;
+}
+function parseBool(v, def = false) {
+  if (v == null) return def;
+  const s = String(v).trim().toLowerCase();
+  if (["1", "true", "t", "yes", "y", "on"].includes(s)) return true;
+  if (["0", "false", "f", "no", "n", "off"].includes(s)) return false;
   return def;
 }
-function parseDateLike(v){
-  if(v==null||v==="") return NaN;
-  const s=String(v).trim();
-  if(/^\d+$/.test(s)){ const num=Number(s); return num>1e12?num:num*1000 }
-  const t=Date.parse(s); 
-  return Number.isFinite(t)?t:NaN;
+function parseDateLike(v) {
+  if (v == null || v === "") return NaN;
+  const s = String(v).trim();
+  if (/^\d+$/.test(s)) {
+    const num = Number(s);
+    return num > 1e12 ? num : num * 1000;
+  }
+  const t = Date.parse(s);
+  return Number.isFinite(t) ? t : NaN;
 }
-function startOfToday(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime() }
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
 
 // Aceita ISO e também "YYYY-MM-DD HH:mm:ss"
-function parseDtFlexible(dt){
-  if(!dt) return NaN;
-  const s=String(dt).trim();
+function parseDtFlexible(dt) {
+  if (!dt) return NaN;
+  const s = String(dt).trim();
   const tIso = Date.parse(s);
-  if(Number.isFinite(tIso)) return tIso;
+  if (Number.isFinite(tIso)) return tIso;
   const m = s.match(/^(\d{4}-\d{2}-\d{2})\d{2}:\d{2}:\d{2}(?:\.\d+)?$/);
-  if(m){
-    const d=new Date(`${m[1]}T${m[2]}`);
-    if(!isNaN(d)) return d.getTime();
+  if (m) {
+    const d = new Date(`${m[1]}T${m[2]}`);
+    if (!isNaN(d)) return d.getTime();
   }
   return NaN;
 }
 
 // EXTRA — extrair 83KM/H do texto
-function extractSpeedFromText(r){
-  const m = String(r.alrtTelem||"").toUpperCase().match(/(\d{2,3})\s*KM\/H/);
+function extractSpeedFromText(r) {
+  const m = String(r.alrtTelem || "")
+    .toUpperCase()
+    .match(/(\d{2,3})\s*KM\/H/);
   return m ? Number(m[1]) : NaN;
 }
 
+function extractSpeedLimit(r) {
+  return safeNumber(r.limite);
+}
+
 // Modo HOJE
-function getTimeRange(req){
-  const now=Date.now();
-  if(String(req.query.today||"0")==="1"){
-    return { since: startOfToday(), until: now, mode:"TODAY" };
+function getTimeRange(req) {
+  const now = Date.now();
+  if (String(req.query.today || "0") === "1") {
+    return { since: startOfToday(), until: now, mode: "TODAY" };
   }
   const lh = Number(req.query.lastHours ?? LAST_HOURS_DEFAULT);
-  if(Number.isFinite(lh)&&lh>0){
-    return { since: now-lh*3600000, until: now, mode:"LAST_HOURS" };
+  if (Number.isFinite(lh) && lh > 0) {
+    return { since: now - lh * 3600000, until: now, mode: "LAST_HOURS" };
   }
-  const since=parseDateLike(req.query.since);
-  const until=parseDateLike(req.query.until);
-  const s=Number.isFinite(since)?since:now-24*3600000;
-  const u=Number.isFinite(until)?until:now;
-  return { since:s, until:u, mode:"RANGE" };
+  const since = parseDateLike(req.query.since);
+  const until = parseDateLike(req.query.until);
+  const s = Number.isFinite(since) ? since : now - 24 * 3600000;
+  const u = Number.isFinite(until) ? until : now;
+  return { since: s, until: u, mode: "RANGE" };
 }
 
 // Apenas para compatibilidade (não usado no company80)
-function isExcessoOficial(r){
-  const tipo=String(r.tipo??"").toUpperCase();
-  if(tipo==="EXCESSO_VELOCIDADE") return true;
-  const a=String(r.alrtTelem??"").toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  const pats=[
+function isExcessoOficial(r) {
+  const tipo = String(r.tipo ?? "").toUpperCase();
+  if (tipo === "EXCESSO_VELOCIDADE") return true;
+  const a = String(r.alrtTelem ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  const pats = [
     /excesso\s+de\s+velocidade/,
     /excesso\s+velocidade/,
     /velocidade\s+excessiva/,
-    /alerta\s+de\s+velocidade/
+    /alerta\s+de\s+velocidade/,
   ];
-  return pats.some(rx=>rx.test(a));
+  return pats.some((rx) => rx.test(a));
 }
 
 // -------------------------------------------------------
@@ -111,56 +135,69 @@ function isExcessoOficial(r){
 //  Agora com company80 = vel > 80 FIXO
 //  + velocidade extraída do texto (83KM/H)
 // -------------------------------------------------------
-app.get("/api/excessos",(req,res)=>{
+app.get("/api/excessos", (req, res) => {
+  const map = loadJson(MAP_FILE, {});
+  const { since, until, mode } = getTimeRange(req);
 
-  const map = loadJson(MAP_FILE,{});
-  const {since,until,mode} = getTimeRange(req);
+  const company80 = String(req.query.company80 || "0") === "1";
 
-  const company80 = String(req.query.company80||"0")==="1";
-
-  const speedMin     = Number(req.query.speedMin ?? SPEED_MIN_DEFAULT);
-  const maxPoints    = Number(req.query.maxPoints ?? MAX_POINTS_DEFAULT);
-  const dedupeByMid  = parseBool(req.query.dedupe ?? DEDUPE_BY_MID_DEF);
+  const speedMin = Number(req.query.speedMin ?? SPEED_MIN_DEFAULT);
+  const maxPoints = Number(req.query.maxPoints ?? MAX_POINTS_DEFAULT);
+  const dedupeByMid = parseBool(req.query.dedupe ?? DEDUPE_BY_MID_DEF);
   const officialOnly = parseBool(req.query.officialOnly ?? OFFICIAL_ONLY_DEF);
-  const useLimit     = parseBool(req.query.useLimit ?? false);
-  const wantStats    = parseBool(req.query.stats ?? false);
+  const useLimit = parseBool(req.query.useLimit ?? false);
+  const wantStats = parseBool(req.query.stats ?? false);
 
   // filtro por placa
-  const placaQuery   = String(req.query.placa ?? "").trim();
+  const placaQuery = String(req.query.placa ?? "").trim();
   const placasWanted = placaQuery
-    ? new Set(placaQuery.split(",").map(s=>s.trim().toUpperCase()))
+    ? new Set(placaQuery.split(",").map((s) => s.trim().toUpperCase()))
     : null;
 
-  if(!fs.existsSync(VIO_FILE)){
+  if (!fs.existsSync(VIO_FILE)) {
     return res.json({
       mode,
-      since:new Date(since).toISOString(),
-      until:new Date(until).toISOString(),
+      since: new Date(since).toISOString(),
+      until: new Date(until).toISOString(),
       company80,
-      points:[]
+      points: [],
     });
   }
 
-  const raw=fs.readFileSync(VIO_FILE,"utf8");
-  const lines=raw.split("\n").filter(Boolean);
+  const raw = fs.readFileSync(VIO_FILE, "utf8");
+  const lines = raw.split("\n").filter(Boolean);
 
-  const seenMid=new Set();
-  const points=[];
-  const placasSet=new Set();
+  const seenMid = new Set();
+  const points = [];
+  const placasSet = new Set();
 
-  const stats={lines:lines.length,parsed:0,inRange:0,officialPass:0,
-               speedPass:0,latlonPass:0,deduped:0,final:0};
+  const stats = {
+    lines: lines.length,
+    parsed: 0,
+    inRange: 0,
+    officialPass: 0,
+    speedPass: 0,
+    latlonPass: 0,
+    deduped: 0,
+    final: 0,
+  };
 
-  for(const line of lines){
-    let r; try{ r=JSON.parse(line); stats.parsed++; }catch{ continue }
+  for (const line of lines) {
+    let r;
+    try {
+      r = JSON.parse(line);
+      stats.parsed++;
+    } catch {
+      continue;
+    }
 
     const t = parseDtFlexible(r.dt);
-    if(!Number.isFinite(t)||t<since||t>until) continue;
+    if (!Number.isFinite(t) || t < since || t > until) continue;
     stats.inRange++;
 
     // Oficial (IGNORADO no company80)
-    if(!company80){
-      if(officialOnly && !isExcessoOficial(r)) continue;
+    if (!company80) {
+      if (officialOnly && !isExcessoOficial(r)) continue;
       stats.officialPass++;
     } else {
       stats.officialPass++;
@@ -169,72 +206,77 @@ app.get("/api/excessos",(req,res)=>{
     // velocidade do número + texto (KM/H)
     const velNum = safeNumber(r.vel);
     const velTxt = extractSpeedFromText(r);
-    const vel    = Number.isFinite(velTxt) ? Math.max(velTxt,velNum) : velNum;
-    if(!Number.isFinite(vel)) continue;
+    const vel = Number.isFinite(velTxt) ? Math.max(velTxt, velNum) : velNum;
+    if (!Number.isFinite(vel)) continue;
 
     // regra empresa
-    let passSpeed=false;
-    if(company80){
+    let passSpeed = false;
+    if (company80) {
       passSpeed = vel > 80;
-    } else if(useLimit){
-      const lim=extractSpeedLimit(r);
-      passSpeed = Number.isFinite(lim)? vel>lim : vel>=speedMin;
+    } else if (useLimit) {
+      const lim = extractSpeedLimit(r);
+      passSpeed = Number.isFinite(lim) ? vel > lim : vel >= speedMin;
     } else {
-      passSpeed = vel>=speedMin;
+      passSpeed = vel >= speedMin;
     }
-    if(!passSpeed) continue;
+    if (!passSpeed) continue;
     stats.speedPass++;
 
-    const lat=safeNumber(r.lat), lon=safeNumber(r.lon);
-    if(!Number.isFinite(lat)||!Number.isFinite(lon)) continue;
+    const lat = safeNumber(r.lat),
+      lon = safeNumber(r.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
     stats.latlonPass++;
 
-    const mid=String(r.mId??"");
-    if(dedupeByMid && mid){
-      if(seenMid.has(mid)){ stats.deduped++; continue }
+    const mid = String(r.mId ?? "");
+    if (dedupeByMid && mid) {
+      if (seenMid.has(mid)) {
+        stats.deduped++;
+        continue;
+      }
       seenMid.add(mid);
     }
 
     const v = map[String(r.veiID)] ?? {};
-    const placa = String(v.placa??"").toUpperCase();
+    const placa = String(v.placa ?? "").toUpperCase();
 
-    if(placasWanted && (!placa || !placasWanted.has(placa))) continue;
+    if (placasWanted && (!placa || !placasWanted.has(placa))) continue;
 
-    placasSet.add(placa||"(sem placa)");
+    placasSet.add(placa || "(sem placa)");
 
     points.push({
-      veiID:r.veiID,
+      veiID: r.veiID,
       placa,
-      motorista:v.mot??"",
-      dt:r.dt,
-      ts:t,
+      motorista: v.mot ?? "",
+      dt: r.dt,
+      ts: t,
       vel,
-      lat,lon,
-      mun:r.mun??"",
-      uf:r.uf??"",
-      via:r.via??""
+      lat,
+      lon,
+      mun: r.mun ?? "",
+      uf: r.uf ?? "",
+      via: r.via ?? "",
     });
   }
 
-  points.sort((a,b)=>(a.ts??0)-(b.ts??0));
-  const limited=points.slice(0,maxPoints);
-  stats.final=limited.length;
+  points.sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0));
+  const limited = points.slice(0, maxPoints);
+  stats.final = limited.length;
 
   res.json({
     mode,
-    since:new Date(since).toISOString(),
-    until:new Date(until).toISOString(),
+    since: new Date(since).toISOString(),
+    until: new Date(until).toISOString(),
     company80,
-    placas:Array.from(placasSet).sort(),
-    ...(wantStats?{stats}:{ }),
-    points:limited
+    placas: Array.from(placasSet).sort(),
+    ...(wantStats ? { stats } : {}),
+    points: limited,
   });
 });
 
 // -------------------------------------------------------
 //  /mapa — HOJE + company80 + filtro de placa + caminhão
 // -------------------------------------------------------
-app.get("/mapa",(req,res)=>{
+app.get("/mapa", (req, res) => {
   res.type("html").send(`<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -337,5 +379,5 @@ setInterval(refresh,60000);
 });
 
 // -------------------------------------------------------
-app.listen(PORT,()=>console.log("Abra: http://localhost:"+PORT+"/mapa"));
+app.listen(PORT, () => console.log("Abra: http://localhost:" + PORT + "/mapa"));
 // -------------------------------------------------------

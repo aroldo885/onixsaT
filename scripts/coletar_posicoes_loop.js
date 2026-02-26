@@ -24,8 +24,11 @@ if (!WS_URL || !LOGIN || !SENHA) {
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
 function loadState() {
-  try { return JSON.parse(fs.readFileSync(STATE_FILE, "utf8")); }
-  catch { return { lastMid: "1" }; }
+  try {
+    return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
+  } catch {
+    return { lastMid: "1" };
+  }
 }
 function saveState(s) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(s, null, 2), "utf8");
@@ -137,7 +140,11 @@ async function tick() {
 (async () => {
   console.log("✅ Coletor iniciado. Intervalo:", INTERVAL_MS, "ms");
   while (true) {
-    try { await tick(); } catch (e) { console.log("Erro:", e.message); }
-    await new Promise(r => setTimeout(r, INTERVAL_MS));
+    try {
+      await tick();
+    } catch (e) {
+      console.log("Erro:", e.message);
+    }
+    await new Promise((r) => setTimeout(r, INTERVAL_MS));
   }
 })();

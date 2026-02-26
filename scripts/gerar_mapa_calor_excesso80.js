@@ -10,8 +10,8 @@ const MAP_FILE = path.join(ROOT, "saida", "map_veiculos.json");
 const mapVeiculos = fs.existsSync(MAP_FILE) ? JSON.parse(fs.readFileSync(MAP_FILE, "utf8")) : {};
 
 // Filtros opcionais via .env
-const FILTER_DATE = process.env.HEATMAP_DATE || "";      // ex: 2026-02-25
-const FILTER_PLACA = process.env.HEATMAP_PLACA || "";    // ex: EJV1G53
+const FILTER_DATE = process.env.HEATMAP_DATE || ""; // ex: 2026-02-25
+const FILTER_PLACA = process.env.HEATMAP_PLACA || ""; // ex: EJV1G53
 const LIMIT = Number(process.env.HEATMAP_LIMIT || 200000);
 const SPEED_LIMIT = Number(process.env.SPEED_LIMIT || 80);
 
@@ -51,7 +51,8 @@ for (const line of lines) {
 }
 
 // Centro do mapa (média)
-let centerLat = -23.0, centerLon = -46.6;
+let centerLat = -23.0,
+  centerLon = -46.6;
 if (points.length) {
   centerLat = points.reduce((s, p) => s + p[0], 0) / points.length;
   centerLon = points.reduce((s, p) => s + p[1], 0) / points.length;

@@ -6,19 +6,25 @@
   "scripts": {
     "start": "nodemon index.js",
     "dev": "nodemon --inspect index.js",
-
     "onixsat:veiculos": "node scripts/test_veiculos.js",
     "onixsat:coletor": "node scripts/coletar_posicoes_loop.js",
     "onixsat:coletor:all": "node scripts/coletar_posicoes_e_violacoes.js",
     "onixsat:server": "node scripts/server_excessos.js",
-
-    "onixsat:all": "concurrently -k \"npm run onixsat:coletor:all\" \"npm run onixsat:server\""
+    "onixsat:all": "concurrently -k \"npm run onixsat:coletor:all\" \"npm run onixsat:server\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "repository": {
     "type": "git",
     "url": "https://o-grupo-vertical@dev.azure.com/o-grupo-vertical/SEEK/_git/logistica.smartcenter.orquestrador.schedule"
   },
-  "keywords": ["smartcenter", "orquestrador", "schedule"],
+  "keywords": [
+    "smartcenter",
+    "orquestrador",
+    "schedule"
+  ],
   "author": "Alesanco Araujo Marins",
   "license": "ISC",
   "dependencies": {
@@ -35,6 +41,9 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.3",
+    "eslint-config-prettier": "^9.1.2",
+    "prettier": "^3.8.1"
   }
 }

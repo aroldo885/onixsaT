@@ -1,46 +1,41 @@
-const _     = require( "lodash" );
+const _ = require("lodash");
 
-const traduzirEvento = ( localizacao ) =>{
+const traduzirEvento = (localizacao) => {
+  const ignicao = localizacao.hasOwnProperty("evt4") ? Number(localizacao.evt4._text) : -1;
+  const velocidade = Number(localizacao.vel._text);
+  const novoEvento = {
+    tipoMedida: "Status",
+    valor: "",
+  };
+  const mapaEventos = [
+    { descricao: "Ligado e parado", ignicao: 1, velocidadeMin: 0, velocidadeMax: 0 },
+    { descricao: "Desligado", ignicao: 0, velocidadeMin: null, velocidadeMax: null },
+    { descricao: "Em transporte", ignicao: 1, velocidadeMin: 0, velocidadeMax: null },
+  ];
 
-    let ignicao     = localizacao.hasOwnProperty( "evt4" ) ? Number( localizacao.evt4._text ) : -1;
-    let velocidade  = Number( localizacao.vel._text );
-    let novoEvento  = {
-        tipoMedida: "Status",
-        valor: ""
-    };
-    let mapaEventos = [
-        {
-            descricao: "Ligado e parado",
-            condicao: "ignicao === 1 && velocidade === 0"
-        },
-        {
-            descricao: "Desligado",
-            condicao: "ignicao === 0"
-        },
-        {
-            descricao: "Em transporte",
-            condicao: "ignicao === 1 && velocidade > 0"
-        }
-    ];
-
-    for( let mapaEvento of mapaEventos ){
-
-        if( eval( mapaEvento.condicao ) ) novoEvento.valor = mapaEvento.descricao;
-
+  for (const mapaEvento of mapaEventos) {
+    const ignMatch = mapaEvento.ignicao === ignicao;
+    let velMatch;
+    if (mapaEvento.velocidadeMax === null && mapaEvento.velocidadeMin === null) {
+      velMatch = true;
+    } else if (mapaEvento.velocidadeMax === null) {
+      velMatch = velocidade > mapaEvento.velocidadeMin;
+    } else {
+      velMatch = velocidade >= mapaEvento.velocidadeMin && velocidade <= mapaEvento.velocidadeMax;
     }
-
-    if( _.isEmpty( novoEvento.valor ) ){
-
-        novoEvento.valor = "Não identificado";
-        
+    if (ignMatch && velMatch) {
+      novoEvento.valor = mapaEvento.descricao;
+      break;
     }
+  }
 
-    return novoEvento;
+  if (_.isEmpty(novoEvento.valor)) {
+    novoEvento.valor = "Não identificado";
+  }
 
+  return novoEvento;
 };
 
 module.exports = {
-
-    traduzirEvento
-
+  traduzirEvento,
 };
