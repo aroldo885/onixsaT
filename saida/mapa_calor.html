@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Mapa de Calor - Onixsat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    body{margin:0;font-family:Arial}
+    #map{height:100vh;width:100vw}
+    .info{position:absolute;top:10px;left:10px;background:#fff;padding:10px;border-radius:8px;z-index:999;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .info b{display:block;margin-bottom:6px}
+  </style>
+</head>
+<body>
+  <div class="info">
+    <b>Mapa de Calor (Heatmap)</b>
+    <div>Pontos: 50</div>
+    <div>Filtro data: —</div>
+    <div>Filtro placa: —</div>
+  </div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <script>
+    const map = L.map('map').setView([-20.480050000000002, -44.735753999999986], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const points = [[-23.0356,-46.7333,1],[-23.0341,-46.7332,1],[-23.694,-46.4168,73],[-22.4903,-47.3997,1],[-19.7648,-47.9763,64],[-20.1692,-40.2041,1],[-8.2758,-34.9948,1],[-22.988,-46.8477,1],[-23.4271,-46.3903,1],[-23.0374,-46.7029,73],[-20.6055,-44.7236,71],[-22.9943,-46.7897,1],[-22.4903,-47.3997,1],[-22.9945,-46.7902,1],[-22.9599,-46.8774,51],[-29.6488,-50.1153,70],[-22.9947,-46.7897,1],[-23.427,-46.3898,1],[-23.2745,-47.828,87],[-23.3788,-47.3319,53],[-19.7684,-47.9748,64],[-23.2107,-46.8927,77],[-23.2751,-47.827,87],[-23.4922,-46.558,1],[-23.427,-46.3894,1],[-23.0356,-46.7333,1],[-23.4922,-46.558,1],[-23.4922,-46.558,1],[-8.2758,-34.9948,1],[-8.2758,-34.9948,1],[-8.2758,-34.9948,1],[-8.2758,-34.9948,1],[-20.6023,-44.7177,77],[-23.4922,-46.558,1],[-8.2758,-34.9948,1],[-20.6023,-44.7177,77],[-23.0355,-46.7333,1],[-23.278,-47.8206,87],[-22.9897,-46.8011,1],[-8.2758,-34.9948,1],[-20.2857,-44.4351,1],[-22.9669,-45.4317,1],[-23.2783,-47.8197,87],[-8.2758,-34.9948,1],[-29.6514,-50.1188,69],[-22.4918,-47.3997,1],[-20.6005,-44.7122,78],[-22.9947,-46.7897,1],[-23.4269,-46.3896,1],[-18.4977,-44.4536,74]];
+
+    // heat layer
+    const heat = L.heatLayer(points, {
+      radius: 18,
+      blur: 22,
+      maxZoom: 12
+    }).addTo(map);
+  </script>
+</body>
+</html>

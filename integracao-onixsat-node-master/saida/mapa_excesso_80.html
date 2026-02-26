@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Excesso de Velocidade > 80 km/h</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    body{margin:0;font-family:Arial}
+    #map{height:100vh;width:100vw}
+    .info{position:absolute;top:10px;left:10px;background:#fff;padding:10px;border-radius:8px;z-index:999;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .info b{display:block;margin-bottom:6px}
+    .muted{color:#666;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="info">
+    <b>Excesso de Velocidade</b>
+    <div id="meta" class="muted">carregando...</div>
+  </div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const API = "http://localhost:8081/api/excessos";
+    const map = L.map('map').setView([-23.2, -46.8], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const layer = L.layerGroup().addTo(map);
+
+    function fmt(dt){
+      // exibe “25/02 10:31”
+      const d = new Date(dt);
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mi = String(d.getMinutes()).padStart(2,'0');
+      return `${dd}/${mm} ${hh}:${mi}`;
+    }
+
+    async function refresh(){
+      const r = await fetch(API, { cache: "no-store" });
+      const data = await r.json();
+
+      document.getElementById("meta").innerText =
+        `Limite > ${data.speedLimit} km/h • janela ${data.windowMinutes} min • pontos ${data.points.length} • atualiza 60s`;
+
+      layer.clearLayers();
+
+      let bounds = [];
+      for (const p of data.points) {
+        if (!Number.isFinite(p.lat) || !Number.isFinite(p.lon)) continue;
+
+        const label = (p.placa || p.veiID);
+        const title = `${label} • ${p.vel} km/h • ${fmt(p.dt)}`;
+
+        // bolinha
+        const marker = L.circleMarker([p.lat, p.lon], {
+          radius: 6,
+          weight: 1
+        });
+
+        // hover (tooltip)
+        marker.bindTooltip(title, { direction: "top", offset: [0, -6] });
+
+        // click (popup)
+        const popupHtml = `
+          <div style="min-width:220px">
+            <b>Placa:</b> ${p.placa || "-"}<br/>
+            <b>Motorista:</b> ${p.motorista || "-"}<br/>
+            <b>Vel:</b> ${p.vel} km/h<br/>
+            <b>Horário:</b> ${fmt(p.dt)}<br/>
+            <b>Local:</b> ${(p.mun||"")}/${(p.uf||"")}<br/>
+            <b>Via:</b> ${p.via || "-"}<br/>
+          </div>
+        `;
+        marker.bindPopup(popupHtml);
+
+        marker.addTo(layer);
+        bounds.push([p.lat, p.lon]);
+      }
+
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 60000); // 1 min
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Heatmap - Excesso de Velocidade > 80 km/h</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    body{margin:0;font-family:Arial}
+    #map{height:100vh;width:100vw}
+    .info{position:absolute;top:10px;left:10px;background:#fff;padding:10px;border-radius:8px;z-index:999;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .info b{display:block;margin-bottom:6px}
+    .info small{color:#666}
+  </style>
+</head>
+<body>
+  <div class="info">
+    <b>Excesso de velocidade (&gt; 80 km/h)</b>
+    <div>Pontos: 0</div>
+    <div>Filtro data: 2026-02-25</div>
+    <div>Filtro placa: EJV1G53</div>
+    <small>Peso = (velocidade - limite)</small>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <script>
+    const map = L.map('map').setView([-23, -46.6], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const points = [];
+
+    L.heatLayer(points, {
+      radius: 18,
+      blur: 22,
+      maxZoom: 12
+    }).addTo(map);
+  </script>
+</body>
+</html>
