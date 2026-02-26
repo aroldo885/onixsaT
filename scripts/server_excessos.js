@@ -196,12 +196,8 @@ app.get("/api/excessos", (req, res) => {
     stats.inRange++;
 
     // Oficial (IGNORADO no company80)
-    if (!company80) {
-      if (officialOnly && !isExcessoOficial(r)) continue;
-      stats.officialPass++;
-    } else {
-      stats.officialPass++;
-    }
+    if (!company80 && officialOnly && !isExcessoOficial(r)) continue;
+    stats.officialPass++;
 
     // velocidade do número + texto (KM/H)
     const velNum = safeNumber(r.vel);
@@ -209,15 +205,12 @@ app.get("/api/excessos", (req, res) => {
     const vel = Number.isFinite(velTxt) ? Math.max(velTxt, velNum) : velNum;
     if (!Number.isFinite(vel)) continue;
 
-    // regra empresa
-    let passSpeed = false;
-    if (company80) {
-      passSpeed = vel > 80;
-    } else if (useLimit) {
+    // regra empresa (default + overrides, no else)
+    let passSpeed = vel >= speedMin;
+    if (company80) passSpeed = vel > 80;
+    if (useLimit && !company80) {
       const lim = extractSpeedLimit(r);
       passSpeed = Number.isFinite(lim) ? vel > lim : vel >= speedMin;
-    } else {
-      passSpeed = vel >= speedMin;
     }
     if (!passSpeed) continue;
     stats.speedPass++;

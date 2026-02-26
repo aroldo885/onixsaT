@@ -13,17 +13,15 @@ const traduzirEvento = (localizacao) => {
     { descricao: "Em transporte", ignicao: 1, velocidadeMin: 0, velocidadeMax: null },
   ];
 
+  const velMatch = (me) => {
+    if (me.velocidadeMax === null && me.velocidadeMin === null) return true;
+    if (me.velocidadeMax === null) return velocidade > me.velocidadeMin;
+    return velocidade >= me.velocidadeMin && velocidade <= me.velocidadeMax;
+  };
+
   for (const mapaEvento of mapaEventos) {
     const ignMatch = mapaEvento.ignicao === ignicao;
-    let velMatch;
-    if (mapaEvento.velocidadeMax === null && mapaEvento.velocidadeMin === null) {
-      velMatch = true;
-    } else if (mapaEvento.velocidadeMax === null) {
-      velMatch = velocidade > mapaEvento.velocidadeMin;
-    } else {
-      velMatch = velocidade >= mapaEvento.velocidadeMin && velocidade <= mapaEvento.velocidadeMax;
-    }
-    if (ignMatch && velMatch) {
+    if (ignMatch && velMatch(mapaEvento)) {
       novoEvento.valor = mapaEvento.descricao;
       break;
     }
