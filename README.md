@@ -1,13 +1,13 @@
 # Patch: Mapa com assets locais + fallback CDN
 
 ## O que vem
-- `server_excessos.js` — servidor com `/mapa` e `/mapa_teste` usando **assets locais** (`/assets/leaflet/*`) e **fallback** para CDN. Inclui API 24/7 com `stats`, parser de data flexível e detecção tolerante de "Excesso".
+- `scripts/server_excessos.js` — servidor com `/mapa` e `/mapa_teste` usando **assets locais** (`/assets/leaflet/*`) e **fallback** para CDN. Inclui API 24/7 com `stats`, parser de data flexível e detecção tolerante de "Excesso".
 - `assets/leaflet/` — pasta onde ficarão `leaflet.css` e `leaflet.js` locais.
 - `get_leaflet.ps1` / `get_leaflet.bat` — scripts para **baixar** os arquivos do Leaflet localmente.
 
 ## Como usar
 1. **Pare** processos antigos (`Ctrl+C`).
-2. **Substitua** seu `server_excessos.js` por este.
+2. O servidor está em `scripts/server_excessos.js` (rode com `npm run onixsat:server`).
 3. **Baixe os assets locais** (opcional, recomendado):
    - PowerShell: `./get_leaflet.ps1`
    - CMD: `get_leaflet.bat`

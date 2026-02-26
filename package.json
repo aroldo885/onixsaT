@@ -7,10 +7,10 @@
     "start": "nodemon index.js",
     "dev": "nodemon --inspect index.js",
 
-    "onixsat:veiculos": "node test_veiculos.js",
-    "onixsat:coletor": "node coletar_posicoes_loop.js",
-    "onixsat:coletor:all": "node coletar_posicoes_e_violacoes.js",
-    "onixsat:server": "node server_excessos.js",
+    "onixsat:veiculos": "node scripts/test_veiculos.js",
+    "onixsat:coletor": "node scripts/coletar_posicoes_loop.js",
+    "onixsat:coletor:all": "node scripts/coletar_posicoes_e_violacoes.js",
+    "onixsat:server": "node scripts/server_excessos.js",
 
     "onixsat:all": "concurrently -k \"npm run onixsat:coletor:all\" \"npm run onixsat:server\""
   },

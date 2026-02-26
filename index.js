@@ -18,12 +18,12 @@ const schedule = new bree( {
     jobs: [
         {
             name: "onixsat equipamentos",
-            path: path.join( __dirname, "src", "jobs", "onixsat", "equipamento.js" ),
+            path: path.join( __dirname, "src", "jobs", "equipamento.js" ),
             interval: process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_EQUIPAMENTO
         },
         {
             name: "onixsat posições",
-            path: path.join( __dirname, "src", "jobs", "onixsat", "posicao.js" ),
+            path: path.join( __dirname, "src", "jobs", "posicao.js" ),
             interval: process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_POSICAO
         }
     ]
