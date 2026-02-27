@@ -28,11 +28,10 @@ OnixSat API (XML/ZIP) → Coletor → saida/posicoes.jsonl
                                  → saida/estado.json
                                          ↓
                               server_excessos.js (mapa + API)
-                              gerar_relatorio_*.js (relatórios)
-                              gerar_mapa_calor*.js (heatmaps)
+                              gerar.js (relatórios e heatmaps)
 ```
 
-- **Coletor**: `coletar_posicoes_e_violacoes.js` ou `coletar_posicoes_loop.js`
+- **Coletor**: `coletar.js` (opções: `--with-violations`, `--once`, `--interval`)
 - **Saída**: Arquivos JSONL na pasta `saida/`
 - **Estado**: `estado.json` guarda o último `mId` para busca incremental
 
@@ -58,25 +57,18 @@ OnixSat API → Jobs Bree (equipamento, posição) → Orquestrador API
 │   ├── posicoes.jsonl       # Posições GPS (uma por linha)
 │   ├── violacoes.jsonl      # Violações detectadas
 │   ├── estado.json          # Estado do coletor (lastMid)
-│   └── map_veiculos.json    # Mapeamento veiID → placa (via test_veiculos)
+│   └── map_veiculos.json    # Mapeamento veiID → placa (via test_onixsat --veiculos)
 ├── src/
 │   ├── jobs/                # Jobs Bree
-│   ├── services/            # OnixSat e Orquestrador
-│   ├── functions/           # Lógica de negócio (ex.: tradução de eventos)
+│   ├── services/            # OnixSat (inclui tradução de eventos) e Orquestrador
 │   └── utils.js
+├── src/core/               # Classes: OnixSatClient, Collector, HeatmapGenerator, etc.
 ├── scripts/
-│   ├── coletar_posicoes_loop.js      # Coletor só posições
-│   ├── coletar_posicoes_e_violacoes.js # Coletor posições + violações
-│   ├── server_excessos.js            # Servidor mapa + API
-│   ├── gerar_relatorio_hora.js       # Relatório CSV
-│   ├── gerar_relatorio_hora_xlsx.js  # Relatório Excel
-│   ├── gerar_relatorio_com_placa_xlsx.js
-│   ├── gerar_mapa_calor.js           # Heatmap de posições
-│   ├── gerar_mapa_calor_excesso80.js # Heatmap de excessos
-│   ├── compilar_csv.js               # CSV histórico
-│   ├── check-data.js                 # Diagnóstico rápido
-│   ├── test_veiculos.js              # Testa busca de veículos + gera map_veiculos
-│   └── test_posicoes.js              # Testa busca de posições
+│   ├── coletar.js          # Coletor (--with-violations, --once, --interval)
+│   ├── server_excessos.js  # Servidor mapa + API
+│   ├── gerar.js            # mapa-calor | relatorio (--excesso, --format, --with-placa)
+│   ├── data.js             # --check | --compilar (diagnóstico e CSV histórico)
+│   └── test_onixsat.js     # --veiculos | --posicoes (testa API OnixSat)
 ├── assets/leaflet/          # Leaflet local (opcional, ver get_leaflet)
 ├── get_leaflet.ps1 / .bat   # Download do Leaflet para uso offline
 ```
@@ -97,6 +89,8 @@ O projeto utiliza ESLint, Prettier e EditorConfig:
 Após `npm install`, execute `npm run lint` e `npm run format:check` para validar o código.
 
 ## Configuração
+
+Toda a configuração é centralizada em `src/config.js`, que carrega variáveis do `.env` e exporta objetos tipados (`onixsat`, `orquestrador`, `coletor`, `server`, `paths`, etc.).
 
 1. Copie o arquivo de exemplo e preencha as credenciais:
 
@@ -176,6 +170,14 @@ npm run onixsat:server
 
 ```bash
 npm run onixsat:coletor
+# ou com intervalo customizado:
+node scripts/coletar.js --interval 60000
+```
+
+### One-shot (uma execução, sai)
+
+```bash
+node scripts/coletar.js --once
 ```
 
 ### Apenas servidor (mapa + API)
@@ -225,15 +227,15 @@ http://localhost:8081/api/excessos?lastHours=6&officialOnly=0&dedupe=0&speedMin=
 
 Execute manualmente após haver dados em `saida/posicoes.jsonl`:
 
-| Script                                           | Saída                                                 | Descrição                       |
-| ------------------------------------------------ | ----------------------------------------------------- | ------------------------------- |
-| `node scripts/gerar_relatorio_hora.js`           | `saida/relatorio_hora.csv`                            | Posições por veículo/hora (CSV) |
-| `node scripts/gerar_relatorio_hora_xlsx.js`      | `saida/relatorio_posicoes_hora_a_hora.xlsx`           | Mesmo relatório em Excel        |
-| `node scripts/gerar_relatorio_com_placa_xlsx.js` | `saida/relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx` | Excel com mapeamento de placa   |
-| `node scripts/gerar_mapa_calor.js`               | `saida/mapa_calor.html`                               | Heatmap de posições             |
-| `node scripts/gerar_mapa_calor_excesso80.js`     | `saida/mapa_calor_excesso_80.html`                    | Heatmap de excessos (>80)       |
-| `node scripts/compilar_csv.js`                   | `saida/historico_posicoes.csv`                        | Histórico bruto em CSV          |
-| `node scripts/check-data.js`                     | (console)                                             | Diagnóstico rápido dos dados    |
+| Comando | Saída | Descrição |
+| ------- | ----- | --------- |
+| `node scripts/gerar.js relatorio` | `saida/relatorio_hora.csv` | Posições por veículo/hora (CSV) |
+| `node scripts/gerar.js relatorio --format xlsx` | `saida/relatorio_posicoes_hora_a_hora.xlsx` | Mesmo relatório em Excel |
+| `node scripts/gerar.js relatorio --format xlsx --with-placa` | `saida/relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx` | Excel com placa |
+| `node scripts/gerar.js mapa-calor` | `saida/mapa_calor.html` | Heatmap de posições |
+| `node scripts/gerar.js mapa-calor --excesso` | `saida/mapa_calor_excesso_80.html` | Heatmap de excessos (>80) |
+| `node scripts/data.js --compilar` | `saida/historico_posicoes.csv` | Histórico bruto em CSV |
+| `node scripts/data.js --check` | (console) | Diagnóstico rápido dos dados |
 
 Filtros opcionais via `.env`:
 

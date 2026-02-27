@@ -1,8 +1,7 @@
-require("dotenv").config();
-
-const bree = require("bree");
 const path = require("path");
+const bree = require("bree");
 const cabin = require("cabin");
+const config = require("./src/config");
 
 const schedule = new bree({
   root: false,
@@ -18,12 +17,12 @@ const schedule = new bree({
     {
       name: "onixsat equipamentos",
       path: path.join(__dirname, "src", "jobs", "equipamento.js"),
-      interval: process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_EQUIPAMENTO,
+      interval: config.orquestrador.intervaloEquipamento,
     },
     {
       name: "onixsat posições",
       path: path.join(__dirname, "src", "jobs", "posicao.js"),
-      interval: process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_POSICAO,
+      interval: config.orquestrador.intervaloPosicao,
     },
   ],
 });
