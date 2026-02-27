@@ -27,8 +27,10 @@ OnixSat API (XML/ZIP) → Coletor → saida/posicoes.jsonl
                                  → saida/violacoes.jsonl
                                  → saida/estado.json
                                          ↓
-                              server_excessos.js (mapa + API)
-                              gerar.js (relatórios e heatmaps)
+                              server_excessos.js (Express)
+                              ├── /mapa    → React SPA (frontend/dist)
+                              ├── /api/excessos
+                              └── gerar.js (relatórios, heatmaps estáticos)
 ```
 
 - **Coletor**: `coletar.js` (opções: `--with-violations`, `--once`, `--interval`)
@@ -53,22 +55,41 @@ OnixSat API → Jobs Bree (equipamento, posição) → Orquestrador API
 ├── index.js                 # Scheduler Bree (modo Orquestrador)
 ├── package.json
 ├── .env                     # Configuração (copie de .env.example)
+├── eslint.config.js         # ESLint flat config
 ├── saida/                   # Dados gerados
 │   ├── posicoes.jsonl       # Posições GPS (uma por linha)
 │   ├── violacoes.jsonl      # Violações detectadas
 │   ├── estado.json          # Estado do coletor (lastMid)
 │   └── map_veiculos.json    # Mapeamento veiID → placa (via test_onixsat --veiculos)
 ├── src/
-│   ├── jobs/                # Jobs Bree
-│   ├── services/            # OnixSat (inclui tradução de eventos) e Orquestrador
-│   └── utils.js
-├── src/core/               # Classes: OnixSatClient, Collector, HeatmapGenerator, etc.
+│   ├── config.js            # Configuração centralizada (.env)
+│   ├── utils.js
+│   ├── jobs/                # Jobs Bree (equipamento, posição)
+│   ├── services/            # OnixSat e Orquestrador
+│   └── core/                # Módulos de negócio
+│       ├── Collector.js     # Coleta mensagens OnixSat
+│       ├── DataSource.js    # Leitura JSONL
+│       ├── Defaults.js      # Valores padrão injetáveis
+│       ├── ExcessosQuery.js # Filtro e query para API excessos
+│       ├── HeatmapGenerator.js
+│       ├── htmlFragments.js # Fragmentos HTML compartilhados
+│       ├── OnixSatClient.js # Cliente API OnixSat + parsers
+│       ├── ReportGenerator.js
+│       └── enums.js
+├── frontend/                # React SPA (mapa de excessos)
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── src/
+│   │   ├── main.jsx
+│   │   ├── App.jsx
+│   │   └── components/      # MapContainer, ExcessMap, PlacaSelector, InfoPanel
+│   └── dist/               # Build (gerado por npm run onixsat:frontend:build)
 ├── scripts/
-│   ├── coletar.js          # Coletor (--with-violations, --once, --interval)
-│   ├── server_excessos.js  # Servidor mapa + API
-│   ├── gerar.js            # mapa-calor | relatorio (--excesso, --format, --with-placa)
-│   ├── data.js             # --check | --compilar (diagnóstico e CSV histórico)
-│   └── test_onixsat.js     # --veiculos | --posicoes (testa API OnixSat)
+│   ├── coletar.js           # Coletor (--with-violations, --once, --interval)
+│   ├── server_excessos.js   # Express: /mapa (React SPA) + /api/excessos
+│   ├── gerar.js             # mapa-calor | relatorio (--excesso, --format, --with-placa)
+│   ├── data.js              # --check | --compilar (diagnóstico e CSV histórico)
+│   └── test_onixsat.js      # --veiculos | --posicoes (testa API OnixSat)
 ├── assets/leaflet/          # Leaflet local (opcional, ver get_leaflet)
 ├── get_leaflet.ps1 / .bat   # Download do Leaflet para uso offline
 ```
@@ -80,11 +101,10 @@ OnixSat API → Jobs Bree (equipamento, posição) → Orquestrador API
 
 ## Linting e Formatação
 
-O projeto utiliza ESLint, Prettier e EditorConfig:
+O projeto utiliza ESLint e Prettier:
 
-- **ESLint** — Regras de qualidade (`.eslintrc.json`)
+- **ESLint** — `eslint.config.js` (flat config), `eslint-plugin-react` para frontend JSX
 - **Prettier** — Formatação consistente (`.prettierrc`)
-- **EditorConfig** — Configuração básica de editor (`.editorconfig`)
 
 Após `npm install`, execute `npm run lint` e `npm run format:check` para validar o código.
 
@@ -150,15 +170,19 @@ npm run onixsat:veiculos
 
 ### Coletor + servidor (modo completo)
 
-Coleta posições e violações a cada 5 minutos e sobe o mapa:
+Coleta posições e violações e sobe o mapa. Buildar o frontend uma vez antes:
 
 ```bash
+npm run onixsat:frontend:build
 npm run onixsat:all
 ```
 
 Ou manualmente em terminais separados:
 
 ```bash
+# Build do mapa (uma vez)
+npm run onixsat:frontend:build
+
 # Terminal 1: coletor
 npm run onixsat:coletor:all
 
@@ -182,13 +206,14 @@ node scripts/coletar.js --once
 
 ### Apenas servidor (mapa + API)
 
-Útil quando você já tem dados em `saida/`:
+Útil quando você já tem dados em `saida/`. O servidor entrega o React SPA em `/mapa`; é necessário buildar o frontend antes:
 
 ```bash
+npm run onixsat:frontend:build
 npm run onixsat:server
 ```
 
-Porta padrão: **8081**. Para alterar: `PORT=8082 npm run onixsat:server`
+Ou use `npm run onixsat:build` para buildar e iniciar em um comando. Porta padrão: **8081**. Para alterar: `PORT=8082 npm run onixsat:server`
 
 ### Scheduler Orquestrador (modo Bree)
 
@@ -199,10 +224,9 @@ npm start
 
 ## Uso do Mapa e da API
 
-Após iniciar o servidor:
+Após iniciar o servidor (com frontend buildado):
 
-- **Mapa com excessos de hoje**: http://localhost:8081/mapa
-- **Mapa de teste** (sem API): http://localhost:8081/mapa_teste
+- **Mapa com excessos de hoje** (React SPA): http://localhost:8081/mapa
 - **API de excessos** (JSON): http://localhost:8081/api/excessos
 
 ### Parâmetros da API `/api/excessos`
@@ -253,23 +277,26 @@ Arquivos em `assets/leaflet/`: `leaflet.css` e `leaflet.js`.
 
 ## Referência de Comandos NPM
 
-| Comando                       | Descrição                                   |
-| ----------------------------- | ------------------------------------------- |
-| `npm start`                   | Scheduler Bree (jobs Orquestrador)          |
-| `npm run dev`                 | Scheduler com nodemon --inspect             |
-| `npm run onixsat:veiculos`    | Testa busca de veículos + gera map_veiculos |
-| `npm run onixsat:coletor`     | Coletor somente posições                    |
-| `npm run onixsat:coletor:all` | Coletor posições + violações                |
-| `npm run onixsat:server`      | Servidor mapa + API                         |
-| `npm run onixsat:all`         | Coletor + servidor em paralelo              |
-| `npm run lint`                | Executa ESLint                              |
-| `npm run lint:fix`            | ESLint com auto-fix                         |
-| `npm run format`              | Formata código com Prettier                 |
-| `npm run format:check`        | Verifica formatação sem alterar             |
+| Comando                          | Descrição                                      |
+| -------------------------------- | ---------------------------------------------- |
+| `npm start`                      | Scheduler Bree (jobs Orquestrador)             |
+| `npm run dev`                    | Scheduler com nodemon --inspect                |
+| `npm run onixsat:veiculos`       | Testa busca de veículos + gera map_veiculos    |
+| `npm run onixsat:coletor`        | Coletor somente posições                       |
+| `npm run onixsat:coletor:all`    | Coletor posições + violações                   |
+| `npm run onixsat:frontend:build` | Build do React SPA (Vite)                      |
+| `npm run onixsat:frontend:dev`   | Dev server do frontend (Vite)                  |
+| `npm run onixsat:server`         | Servidor mapa + API (requer frontend buildado) |
+| `npm run onixsat:build`          | Build frontend + inicia servidor               |
+| `npm run onixsat:all`            | Coletor + servidor em paralelo                 |
+| `npm run lint`                   | Executa ESLint                                 |
+| `npm run lint:fix`               | ESLint com auto-fix                            |
+| `npm run format`                 | Formata código com Prettier                    |
+| `npm run format:check`           | Verifica formatação sem alterar                |
 
 ## Troubleshooting
 
 - **Credenciais**: Garanta que `ONIXSAT_WS_URL`, `ONIXSAT_LOGIN` e `ONIXSAT_SENHA` estão corretos no `.env`.
 - **Throttle OnixSat**: Se surgir erro de "tempo mínimo para reenvio", o coletor aplica backoff automático. Ajuste `ONIXSAT_BACKOFF_MAX_MS` se necessário.
 - **Placas vazias no mapa**: Rode `npm run onixsat:veiculos` para gerar `saida/map_veiculos.json`.
-- **mapa_teste**: Use para testar o carregamento do Leaflet sem depender da API de excessos.
+- **Mapa em branco**: Execute `npm run onixsat:frontend:build` antes de `npm run onixsat:server`.
