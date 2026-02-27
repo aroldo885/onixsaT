@@ -3,7 +3,6 @@ const moment = require("moment");
 
 const servicosOrquestrador = require("../services/orquestrador");
 const servicosOnixsat = require("../services/onixsat");
-const fnOnixsat = require("../functions/onixsat");
 const utils = require("../utils");
 
 const main = async () => {
@@ -59,7 +58,7 @@ const main = async () => {
             latitude: Number(equipamentoOs.lat._text.replace(/,/g, ".")),
             longitude: Number(equipamentoOs.lon._text.replace(/,/g, ".")),
             medidas: [
-              fnOnixsat.traduzirEvento(equipamentoOs),
+              servicosOnixsat.traduzirEvento(equipamentoOs),
               { tipoMedida: "Velocidade", valor: Number(equipamentoOs.vel._text) },
             ],
           },

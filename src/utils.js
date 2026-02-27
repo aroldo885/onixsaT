@@ -2,10 +2,11 @@ const _ = require("lodash");
 const moment = require("moment");
 const path = require("path");
 const fs = require("fs");
+const config = require("./config");
 
 const gerarDatas = (geraDeHoraEmHora) => {
-  let dataInicio = process.env.DATA_INICIO_PROCESSAMENTO;
-  let dataFim = process.env.DATA_FIM_PROCESSAMENTO;
+  let dataInicio = config.processamento.dataInicio;
+  let dataFim = config.processamento.dataFim;
   let datas = [];
 
   dataInicio = _.isEmpty(dataInicio)
@@ -50,7 +51,7 @@ const capitalizar = (string) => {
 
 const gravarErrorLog = (errors) => {
   const nomeArquivoDeLog = `${moment().locale("pt-br").format("DD-MM-YYYY")}.txt`;
-  const caminhoArquivoLog = path.join(process.env.SCHEDULE_PASTA_LOG, `${nomeArquivoDeLog}`);
+  const caminhoArquivoLog = path.join(config.paths.schedulePastaLog, `${nomeArquivoDeLog}`);
 
   if (!fs.existsSync(caminhoArquivoLog)) {
     fs.writeFileSync(caminhoArquivoLog, "", { encoding: "utf8" });

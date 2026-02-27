@@ -1,12 +1,14 @@
 const axios = require("axios");
 const { isEmpty } = require("lodash");
 
+const config = require("../config");
 const { tratarMsgErroApi } = require("../utils");
+const baseUrl = config.orquestrador.apiBaseUrl;
 
 const sincronizar = async (idRastreador, equipamentos) => {
   try {
     const resultado = await axios.post(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/rastreadores/${idRastreador}/sincronizar`,
+      `${require("../config").orquestrador.apiBaseUrl}/v1/rastreadores/${idRastreador}/sincronizar`,
       { equipamentos },
       { timeout: 600000 }
     );
@@ -19,7 +21,7 @@ const sincronizar = async (idRastreador, equipamentos) => {
 const buscarDadosRastreadorPeloNome = async (nome) => {
   try {
     const resultado = await axios.get(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/rastreadores/${nome}`,
+      `${baseUrl}/v1/rastreadores/${nome}`,
       { timeout: 600000 }
     );
     if (isEmpty(resultado.data)) {
@@ -36,7 +38,7 @@ const buscarDadosRastreadorPeloNome = async (nome) => {
 const buscarIdUltimaPosicao = async (idRastreador) => {
   try {
     const resultado = await axios.get(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/rastreadores/${idRastreador}/ultimaPosicao`,
+      `${baseUrl}/v1/rastreadores/${idRastreador}/ultimaPosicao`,
       { timeout: 600000 }
     );
     return resultado.data.idUltimaPosicao;
@@ -54,7 +56,7 @@ const buscarIdUltimaPosicaoEquipamentoRastreador = async (
 ) => {
   try {
     const resultado = await axios.get(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/rastreadores/${idRastreador}/equipamentos/${placa}/origens/${codigoSistemaOrigem}/ultimaPosicao`,
+      `${baseUrl}/v1/rastreadores/${idRastreador}/equipamentos/${placa}/origens/${codigoSistemaOrigem}/ultimaPosicao`,
       { timeout: 600000 }
     );
     return resultado.data.idUltimaPosicao;
@@ -71,7 +73,7 @@ const buscarIdUltimaPosicaoEquipamentoRastreador = async (
 const buscarPlacaPeloRastreadorECodigoSistemaOrigem = async (idRastreador, codigoSistemaOrigem) => {
   try {
     const resultado = await axios.get(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/rastreadores/${idRastreador}/origens/${codigoSistemaOrigem}`,
+      `${baseUrl}/v1/rastreadores/${idRastreador}/origens/${codigoSistemaOrigem}`,
       { timeout: 600000 }
     );
     return resultado.data;
@@ -91,7 +93,7 @@ const buscarIdUltimaMensagemRastreadorPeloIdEquipamentoRastreador = async (
 ) => {
   try {
     const resultado = await axios.get(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/equipamentos/equipamentoRastreador/${idEquipamentoRastreador}/ultimaMensagem/${rastreador}`,
+      `${baseUrl}/v1/equipamentos/equipamentoRastreador/${idEquipamentoRastreador}/ultimaMensagem/${rastreador}`,
       { timeout: 600000 }
     );
     return resultado.data;
@@ -108,7 +110,7 @@ const buscarIdUltimaMensagemRastreadorPeloIdEquipamentoRastreador = async (
 const vincularEquipamentoAoRastreador = async (placa, idRastreador, codigoSistemaOrigem) => {
   try {
     const resultado = await axios.post(
-      `${process.env.ORQUESTRADOR_API_BASE_URL}/v1/rastreadores/${idRastreador}/equipamentos/${placa}/vincular`,
+      `${baseUrl}/v1/rastreadores/${idRastreador}/equipamentos/${placa}/vincular`,
       { codigoSistemaOrigem },
       { timeout: 600000 }
     );
@@ -125,7 +127,6 @@ module.exports = {
   buscarDadosRastreadorPeloNome,
   buscarIdUltimaPosicao,
   buscarIdUltimaPosicaoEquipamentoRastreador,
-
   buscarIdUltimaMensagemRastreadorPeloIdEquipamentoRastreador,
   buscarPlacaPeloRastreadorECodigoSistemaOrigem,
   vincularEquipamentoAoRastreador,

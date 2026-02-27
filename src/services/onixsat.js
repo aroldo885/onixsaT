@@ -1,140 +1,61 @@
-require("dotenv").config();
-
-const fs = require("fs");
-const https = require("https");
-const moment = require("moment");
-const admZip = require("adm-zip");
-const path = require("path");
 const _ = require("lodash");
-const converter = require("xml-js");
+const { OnixSatClient } = require("../core/OnixSatClient");
 
-const buscarEquipamentos = (dadosRastreador) => {
-  return new Promise((resolve, reject) => {
-    const nomeDoArquivo = `equipamentos-${moment().locale("pt-br").format("YYYY-MM-DDHHmmss")}.zip`;
-    const caminhoDoArquivo = path.join(process.env.ONIXSAT_API_PASTA_ARQUIVO, nomeDoArquivo);
+function toWsUrl(url) {
+  const s = String(url || "").trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  return s ? `https://${s}` : s;
+}
 
-    const data = `
-                <RequestVeiculo>
-                    <login>${dadosRastreador.usuario}</login>
-                    <senha>${dadosRastreador.senha}</senha>
-                </RequestVeiculo>`;
-    const opcoes = {
-      method: "POST",
-      hostname: dadosRastreador.url,
-      port: 443,
-      path: "/",
-      headers: { "Content-Type": "application/xml" },
-    };
-
-    const req = https
-      .request(opcoes, (resultado) => {
-        let partes = [];
-
-        resultado.on("data", (parte) => partes.push(parte));
-        resultado.on("end", () => {
-          const buffer = Buffer.concat(partes);
-          fs.writeFileSync(caminhoDoArquivo, buffer);
-
-          const zip = new admZip(caminhoDoArquivo);
-          const zips = zip.getEntries();
-          fs.unlinkSync(caminhoDoArquivo);
-
-          if (_.isEmpty(zips)) {
-            reject(new Error("Não foi possível obter a lista dos veículos"));
-            return;
-          }
-
-          const xmlStr = zips[0].getData().toString("utf8");
-          const json = converter.xml2json(xmlStr, { compact: true, spaces: 4 });
-          const retorno = JSON.parse(json);
-
-          if (retorno.hasOwnProperty("ErrorRequest")) {
-            reject(
-              new Error(
-                `Ocorreu um erro ao buscar os equipamentos com o código ${retorno.ErrorRequest.codigo._text}! Detalhamento: ${retorno.ErrorRequest.erro._text}`
-              )
-            );
-            return;
-          }
-
-          resolve(retorno.ResponseVeiculo.Veiculo);
-        });
-      })
-      .on("error", (error) => reject(error));
-
-    req.write(data);
-    req.end();
+const buscarEquipamentos = async (dadosRastreador) => {
+  const client = new OnixSatClient({
+    wsUrl: toWsUrl(dadosRastreador.url),
+    login: dadosRastreador.usuario,
+    senha: dadosRastreador.senha,
   });
+  const raw = await client.fetchVeiculos();
+  if (!raw || !Array.isArray(raw)) return [];
+  return raw;
 };
 
-const buscarLocalizacoesEquipamento = (dadosRastreador, ultimaMensagem) => {
-  return new Promise((resolve, reject) => {
-    const nomeDoArquivo = `posicoes-${moment().locale("pt-br").format("YYYY-MM-DDHHmmss")}.zip`;
-    const caminhoDoArquivo = path.join(process.env.ONIXSAT_API_PASTA_ARQUIVO, nomeDoArquivo);
-
-    const mId = ultimaMensagem === 0 ? 1 : ultimaMensagem;
-    const data = `
-                <RequestMensagemCB>
-                    <login>${dadosRastreador.usuario}</login>
-                    <senha>${dadosRastreador.senha}</senha>
-                    <mId>${mId}</mId>
-                </RequestMensagemCB>`;
-    const opcoes = {
-      method: "POST",
-      hostname: dadosRastreador.url,
-      port: 443,
-      path: "/",
-      headers: { "Content-Type": "application/xml" },
-    };
-
-    const req = https
-      .request(opcoes, (resultado) => {
-        let partes = [];
-
-        resultado.on("data", (parte) => partes.push(parte));
-        resultado.on("end", () => {
-          const buffer = Buffer.concat(partes);
-          fs.writeFileSync(caminhoDoArquivo, buffer);
-
-          const zip = new admZip(caminhoDoArquivo);
-          const zips = zip.getEntries();
-          fs.unlinkSync(caminhoDoArquivo);
-
-          if (_.isEmpty(zips)) {
-            reject(new Error("Não foi possível obter a lista dos veículos"));
-            return;
-          }
-
-          const xmlStr = zips[0].getData().toString("utf8");
-          const json = converter.xml2json(xmlStr, { compact: true, spaces: 4 });
-          const retorno = JSON.parse(json);
-
-          if (retorno.hasOwnProperty("ErrorRequest")) {
-            reject(
-              new Error(
-                `Ocorreu um erro ao buscar os equipamentos com o código ${retorno.ErrorRequest.codigo._text}! Detalhamento: ${retorno.ErrorRequest.erro._text}`
-              )
-            );
-            return;
-          }
-
-          if (_.isEmpty(retorno.ResponseMensagemCB)) {
-            resolve([]);
-            return;
-          }
-
-          const msgs = retorno.ResponseMensagemCB.MensagemCB;
-          resolve(Array.isArray(msgs) ? msgs : [msgs]);
-        });
-      })
-      .on("error", (error) => reject(error));
-
-    req.write(data);
-    req.end();
+const buscarLocalizacoesEquipamento = async (dadosRastreador, ultimaMensagem) => {
+  const client = new OnixSatClient({
+    wsUrl: toWsUrl(dadosRastreador.url),
+    login: dadosRastreador.usuario,
+    senha: dadosRastreador.senha,
   });
+  const mId = ultimaMensagem === 0 ? 1 : ultimaMensagem;
+  return client.fetchMensagens(mId);
 };
+
+function traduzirEvento(localizacao) {
+  const ignicao = localizacao.hasOwnProperty("evt4")
+    ? Number(localizacao.evt4._text)
+    : -1;
+  const velocidade = Number(localizacao.vel._text);
+  const novoEvento = { tipoMedida: "Status", valor: "" };
+  const mapaEventos = [
+    { descricao: "Ligado e parado", ignicao: 1, velocidadeMin: 0, velocidadeMax: 0 },
+    { descricao: "Desligado", ignicao: 0, velocidadeMin: null, velocidadeMax: null },
+    { descricao: "Em transporte", ignicao: 1, velocidadeMin: 0, velocidadeMax: null },
+  ];
+  const velMatch = (me) => {
+    if (me.velocidadeMax === null && me.velocidadeMin === null) return true;
+    if (me.velocidadeMax === null) return velocidade > me.velocidadeMin;
+    return velocidade >= me.velocidadeMin && velocidade <= me.velocidadeMax;
+  };
+  for (const mapaEvento of mapaEventos) {
+    if (mapaEvento.ignicao === ignicao && velMatch(mapaEvento)) {
+      novoEvento.valor = mapaEvento.descricao;
+      break;
+    }
+  }
+  if (_.isEmpty(novoEvento.valor)) novoEvento.valor = "Não identificado";
+  return novoEvento;
+}
 
 module.exports = {
   buscarEquipamentos,
   buscarLocalizacoesEquipamento,
+  traduzirEvento,
 };
