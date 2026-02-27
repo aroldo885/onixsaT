@@ -222,6 +222,23 @@ npm start
 # ou com reload: npm run dev
 ```
 
+### Docker
+
+Build e execução via Docker:
+
+```bash
+docker build -t onixsat-mapa .
+docker run -d -p 8081:8081 -v $(pwd)/saida:/app/saida onixsat-mapa
+```
+
+Ou com docker-compose:
+
+```bash
+docker compose up -d
+```
+
+O volume `saida/` pode ser montado para persistir posições, violações e map_veiculos. Sem o volume, o mapa exibirá dados vazios até que o coletor rode fora do container e popule os arquivos.
+
 ## Uso do Mapa e da API
 
 Após iniciar o servidor (com frontend buildado):
@@ -293,6 +310,14 @@ Arquivos em `assets/leaflet/`: `leaflet.css` e `leaflet.js`.
 | `npm run lint:fix`               | ESLint com auto-fix                            |
 | `npm run format`                 | Formata código com Prettier                    |
 | `npm run format:check`           | Verifica formatação sem alterar                |
+
+### Docker
+
+| Comando                          | Descrição                               |
+| -------------------------------- | --------------------------------------- |
+| `docker build -t onixsat-mapa .` | Build da imagem                         |
+| `docker run -p 8081:8081 ...`    | Executa container (montar volume saida) |
+| `docker compose up -d`           | Sobe serviço com volume para saida      |
 
 ## Troubleshooting
 

@@ -1,0 +1,16 @@
+node_modules
+frontend/node_modules
+frontend/dist
+.git
+.env
+.env.*
+!.env.example
+saida/*
+*.log
+.cursor
+README.md
+*.md
+.eslintrc*
+.prettierrc
+.prettierignore
+.editorconfig

@@ -1,0 +1,12 @@
+services:
+  onixsat:
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+    volumes:
+      - saida:/app/saida
+
+volumes:
+  saida:
