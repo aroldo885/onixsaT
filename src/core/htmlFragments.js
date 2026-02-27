@@ -1,8 +1,3 @@
-/**
- * Shared HTML/CSS/Leaflet fragments for static heatmap and server-rendered pages.
- * Centralizes Leaflet CDN URLs, viewport, and common styles.
- */
-
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 const LEAFLET_HEAT_JS = "https://unpkg.com/leaflet.heat/dist/leaflet-heat.js";
@@ -16,11 +11,6 @@ const BASE_STYLES = `
   .info small{color:#666}
 `.trim();
 
-/**
- * @param {object} opts
- * @param {string} [opts.title] - Page title
- * @param {string} [opts.extraStyles] - Additional CSS (e.g. mapa-specific: #bar, .truck)
- */
 function leafletHead(opts = {}) {
   const { title = "", extraStyles = "" } = opts;
   return `<meta charset="utf-8"/>
@@ -33,16 +23,10 @@ function leafletHead(opts = {}) {
   </style>`;
 }
 
-/**
- * Returns the map container div.
- */
 function mapContainer() {
   return '<div id="map"></div>';
 }
 
-/**
- * @param {boolean} [withHeat=false] - Include leaflet-heat.js
- */
 function leafletScripts(withHeat = false) {
   let out = `<script src="${LEAFLET_JS}"></script>`;
   if (withHeat) {

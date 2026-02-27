@@ -1,7 +1,3 @@
-/**
- * Report generator. Use options.format (CSV|XLSX) and options.withPlaca.
- */
-
 const fs = require("fs");
 const ExcelJS = require("exceljs");
 const { ReportFormat } = require("./enums");

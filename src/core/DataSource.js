@@ -1,7 +1,3 @@
-/**
- * JSONL file data source. Factory returns object with read().
- */
-
 const fs = require("fs");
 const { defaults } = require("./Defaults");
 

@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-/**
- * Generate maps and reports: mapa-calor | relatorio
- *
- * Usage:
- *   node scripts/gerar.js mapa-calor [--excesso] [--speed-limit N]
- *   node scripts/gerar.js relatorio [--format csv|xlsx] [--with-placa]
- */
 
 const fs = require("fs");
 const path = require("path");

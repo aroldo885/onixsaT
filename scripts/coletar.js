@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-/**
- * Unified collector CLI. Replaces coletar_posicoes_loop, coletar_posicoes_e_violacoes, robo_posicoes.
- *
- * Usage:
- *   node scripts/coletar.js                    # positions only
- *   node scripts/coletar.js --interval 60000
- *   node scripts/coletar.js --with-violations # positions + violations (5 min, backoff)
- *   node scripts/coletar.js --once            # one shot, exit
- */
 
 const fs = require("fs");
 const config = require("../src/config");

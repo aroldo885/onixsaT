@@ -1,17 +1,8 @@
-/**
- * Query/filter logic for excessos API.
- */
-
 const fs = require("fs");
 const { TimeRangeMode } = require("./enums");
 const { defaults: builtinDefaults } = require("./Defaults");
 
 class ExcessosQuery {
-  /**
-   * @param {object} req Express request (with query params)
-   * @param {object} serverDefaults Server config (excessosMaxPoints, speedMin, etc.)
-   * @param {object} [defaults] Injectable for tests
-   */
   constructor(req, serverDefaults = {}, defaults = builtinDefaults) {
     this.req = req;
     const e = defaults.excessos;
@@ -114,9 +105,6 @@ class ExcessosQuery {
     return { since: s, until: u, mode: TimeRangeMode.RANGE };
   }
 
-  /**
-   * Filter records from vio file path. Returns { points, placas, stats? }.
-   */
   filterPoints(vioFilePath, mapVeiculosPath) {
     const map = (() => {
       try {

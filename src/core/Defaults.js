@@ -1,8 +1,3 @@
-/**
- * Centralized hardcoded values. Injectable for testing.
- * Pass overrides to constructor to mock: new Defaults({ heatmap: { centerLat: 0 } }).
- */
-
 function deepMerge(target, source) {
   const out = { ...target };
   for (const k of Object.keys(source ?? {})) {

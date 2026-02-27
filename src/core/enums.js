@@ -1,7 +1,3 @@
-/**
- * Enums for OnixSat project.
- */
-
 const CollectorMode = Object.freeze({
   POSITIONS_ONLY: "POSITIONS_ONLY",
   POSITIONS_AND_VIOLATIONS: "POSITIONS_AND_VIOLATIONS",

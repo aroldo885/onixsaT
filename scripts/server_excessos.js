@@ -1,7 +1,3 @@
-// ==================================================================
-//  server_excessos.js — Mapa + API de excessos
-// ==================================================================
-
 const path = require("path");
 const express = require("express");
 const config = require("../src/config");

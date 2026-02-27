@@ -1,7 +1,3 @@
-/**
- * Heatmap generator. Use speedLimit to switch between all-positions and excesso modes.
- */
-
 const fs = require("fs");
 const { createJsonlSource } = require("./DataSource");
 const { defaults } = require("./Defaults");
@@ -66,11 +62,6 @@ ${head}
 }
 
 class HeatmapGenerator {
-  /**
-   * @param {object} source - Data source with read()
-   * @param {object} filter - { mapVeiculosPath, filterDate, filterPlaca, limit }
-   * @param {object} opts - { speedLimit, defaults } — speedLimit set = excesso mode
-   */
   constructor(source, filter, opts = {}) {
     this.source = source;
     this.filter = filter;

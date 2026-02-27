@@ -1,7 +1,3 @@
-/**
- * OnixSat API client and XML/JSON parsers.
- */
-
 const axios = require("axios");
 const AdmZip = require("adm-zip");
 const { xml2js } = require("xml-js");
@@ -34,9 +30,6 @@ const OnixSatParsers = {
 };
 
 class OnixSatClient {
-  /**
-   * @param {{ wsUrl: string, login: string, senha: string, defaults?: object }} credentials
-   */
   constructor({ wsUrl, login, senha, defaults: d } = {}) {
     this.wsUrl = wsUrl;
     this.login = login;
@@ -44,9 +37,6 @@ class OnixSatClient {
     this._defaults = d ?? defaults;
   }
 
-  /**
-   * POST XML and return parsed JSON (compact).
-   */
   async postXml(xml) {
     const resp = await axios.post(this.wsUrl, xml, {
       headers: { "Content-Type": "text/xml; charset=utf-8" },
@@ -66,10 +56,6 @@ class OnixSatClient {
     return json;
   }
 
-  /**
-   * Fetch MensagemCB from OnixSat.
-   * @returns {Promise<object[]>}
-   */
   async fetchMensagens(mid) {
     const xml = `
 <RequestMensagemCB>
@@ -84,10 +70,6 @@ class OnixSatClient {
     return Array.isArray(items) ? items : [items];
   }
 
-  /**
-   * Fetch Veiculo list from OnixSat.
-   * @returns {Promise<object[]>}
-   */
   async fetchVeiculos() {
     const xml = `
 <RequestVeiculo>

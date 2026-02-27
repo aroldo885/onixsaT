@@ -1,24 +1,9 @@
-/**
- * Collector: fetches messages from OnixSat, writes posicoes (+ optionally violacoes).
- */
-
 const fs = require("fs");
 const { CollectorMode, ViolationType } = require("./enums");
 const { OnixSatParsers } = require("./OnixSatClient");
 const { defaults } = require("./Defaults");
 
 class Collector {
-  /**
-   * @param {object} opts
-   * @param {import("./OnixSatClient")} opts.client
-   * @param {string} opts.statePath - Path to estado.json
-   * @param {string} opts.mode CollectorMode
-   * @param {number} [opts.speedLimit] - For violation mode
-   * @param {string} [opts.excessoText] - For violation mode
-   * @param {object} opts.paths { outDir, posicoesJsonl, violacoesJsonl, estadoJson }
-   * @param {object} opts.options { intervalMs, backoffInit, backoffMax, backoffFactor }
-   * @param {import("./Defaults")} [opts.defaults] - Injectable for tests
-   */
   constructor({
     client,
     statePath,

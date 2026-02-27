@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-/**
- * Test OnixSat API: --veiculos (map_veiculos.json) or --posicoes (messages sample).
- */
 
 const fs = require("fs");
 const path = require("path");

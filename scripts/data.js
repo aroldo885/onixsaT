@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-/**
- * Data tools: --check (violations stats) or --compilar (historico_posicoes.csv).
- */
 
 const fs = require("fs");
 const path = require("path");
