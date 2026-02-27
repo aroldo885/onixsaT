@@ -20,10 +20,7 @@ const sincronizar = async (idRastreador, equipamentos) => {
 
 const buscarDadosRastreadorPeloNome = async (nome) => {
   try {
-    const resultado = await axios.get(
-      `${baseUrl}/v1/rastreadores/${nome}`,
-      { timeout: 600000 }
-    );
+    const resultado = await axios.get(`${baseUrl}/v1/rastreadores/${nome}`, { timeout: 600000 });
     if (isEmpty(resultado.data)) {
       throw new Error(`Nenhum rastreador encontrado com o nome [${nome}]`);
     }
@@ -37,10 +34,9 @@ const buscarDadosRastreadorPeloNome = async (nome) => {
 
 const buscarIdUltimaPosicao = async (idRastreador) => {
   try {
-    const resultado = await axios.get(
-      `${baseUrl}/v1/rastreadores/${idRastreador}/ultimaPosicao`,
-      { timeout: 600000 }
-    );
+    const resultado = await axios.get(`${baseUrl}/v1/rastreadores/${idRastreador}/ultimaPosicao`, {
+      timeout: 600000,
+    });
     return resultado.data.idUltimaPosicao;
   } catch (error) {
     throw new Error(

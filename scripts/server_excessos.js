@@ -31,6 +31,4 @@ app.get("/mapa", (req, res) => {
 
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-app.listen(PORT, () =>
-  console.log("Abra: http://localhost:" + PORT + "/mapa")
-);
+app.listen(PORT, () => console.log("Abra: http://localhost:" + PORT + "/mapa"));

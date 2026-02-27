@@ -28,10 +28,8 @@ if (!wsUrl || !login || !senha) {
 
 const paths = config.paths;
 fs.mkdirSync(paths.outDir, { recursive: true });
-if (!fs.existsSync(paths.posicoesJsonl))
-  fs.writeFileSync(paths.posicoesJsonl, "", "utf8");
-if (!fs.existsSync(paths.violacoesJsonl))
-  fs.writeFileSync(paths.violacoesJsonl, "", "utf8");
+if (!fs.existsSync(paths.posicoesJsonl)) fs.writeFileSync(paths.posicoesJsonl, "", "utf8");
+if (!fs.existsSync(paths.violacoesJsonl)) fs.writeFileSync(paths.violacoesJsonl, "", "utf8");
 
 const args = parseArgs();
 
@@ -71,9 +69,7 @@ if (mode === CollectorMode.ONCE) {
   });
 } else {
   const label =
-    mode === CollectorMode.POSITIONS_AND_VIOLATIONS
-      ? "Coletor (posições + violações)"
-      : "Coletor";
+    mode === CollectorMode.POSITIONS_AND_VIOLATIONS ? "Coletor (posições + violações)" : "Coletor";
   console.log(
     `✅ ${label} iniciado. Intervalo: ${intervalMs} ms`,
     mode === CollectorMode.POSITIONS_AND_VIOLATIONS

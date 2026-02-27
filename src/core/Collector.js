@@ -31,20 +31,14 @@ class Collector {
 
   _loadState() {
     try {
-      return JSON.parse(
-        fs.readFileSync(this.statePath, this._defaults.encoding)
-      );
+      return JSON.parse(fs.readFileSync(this.statePath, this._defaults.encoding));
     } catch {
       return { lastMid: this._defaults.state.defaultLastMid };
     }
   }
 
   _saveState(state) {
-    fs.writeFileSync(
-      this.statePath,
-      JSON.stringify(state, null, 2),
-      this._defaults.encoding
-    );
+    fs.writeFileSync(this.statePath, JSON.stringify(state, null, 2), this._defaults.encoding);
   }
 
   _classify(m) {
@@ -163,12 +157,7 @@ class Collector {
         state.lastMid
       );
     } else {
-      console.log(
-        "Gravou",
-        posCount,
-        "registros em",
-        this.paths.posicoesJsonl
-      );
+      console.log("Gravou", posCount, "registros em", this.paths.posicoesJsonl);
       console.log("Próximo mId =", state.lastMid);
     }
   }

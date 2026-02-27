@@ -39,14 +39,15 @@ if (check) {
     total++;
     const t = parse(r.dt);
     const d = new Date(t);
-    const isHoje =
-      Number.isFinite(t) && d.toDateString() === new Date(now).toDateString();
+    const isHoje = Number.isFinite(t) && d.toDateString() === new Date(now).toDateString();
     if (isHoje) hoje++;
     if (Number.isFinite(t) && t >= since6h) ult6h++;
     if (
       isHoje &&
       (String(r.tipo).toUpperCase() === "EXCESSO_VELOCIDADE" ||
-        String(r.alrtTelem || "").toLowerCase().includes("excesso"))
+        String(r.alrtTelem || "")
+          .toLowerCase()
+          .includes("excesso"))
     )
       excessoHoje++;
   }

@@ -15,7 +15,8 @@ const onixsat = {
 
 const orquestrador = {
   apiBaseUrl: process.env.ORQUESTRADOR_API_BASE_URL || "",
-  intervaloEquipamento: process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_EQUIPAMENTO || "0 0 * * * *",
+  intervaloEquipamento:
+    process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_EQUIPAMENTO || "0 0 * * * *",
   intervaloPosicao: process.env.ONIXSAT_API_INTERVALO_SINCRONIZACAO_POSICAO || "0 * * * * *",
 };
 

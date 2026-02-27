@@ -10,7 +10,7 @@ export default function MapContainer({ children }) {
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         maxZoom={18}
-        attribution='&copy; OpenStreetMap'
+        attribution="&copy; OpenStreetMap"
       />
       {children}
     </LeafletMapContainer>

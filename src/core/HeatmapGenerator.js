@@ -1,12 +1,7 @@
 const fs = require("fs");
 const { createJsonlSource } = require("./DataSource");
 const { defaults } = require("./Defaults");
-const {
-  leafletHead,
-  mapContainer,
-  leafletScripts,
-  OSM_TILE,
-} = require("./htmlFragments");
+const { leafletHead, mapContainer, leafletScripts, OSM_TILE } = require("./htmlFragments");
 
 function placaDoVeiID(map, veiID) {
   return (map[String(veiID)] && map[String(veiID)].placa) || "";
@@ -20,7 +15,14 @@ function loadMapVeiculos(mapPath, encoding) {
   }
 }
 
-function buildHtml(title, points, centerLat, centerLon, extraInfo = "", leaflet = defaults.heatmap.leaflet) {
+function buildHtml(
+  title,
+  points,
+  centerLat,
+  centerLon,
+  extraInfo = "",
+  leaflet = defaults.heatmap.leaflet
+) {
   const head = leafletHead({ title });
   const mapDiv = mapContainer();
   const scripts = leafletScripts(true);
@@ -88,14 +90,14 @@ class HeatmapGenerator {
       const vel = Number(r.vel ?? 0);
       if (isExcesso && !(vel > this.speedLimit)) continue;
 
-      if (filterDate && (!r.dt || !String(r.dt).startsWith(filterDate)))
-        continue;
-      if (filterPlaca && placaDoVeiID(mapVeiculos, r.veiID) !== filterPlaca)
-        continue;
+      if (filterDate && (!r.dt || !String(r.dt).startsWith(filterDate))) continue;
+      if (filterPlaca && placaDoVeiID(mapVeiculos, r.veiID) !== filterPlaca) continue;
 
       const weight = isExcesso
         ? Math.min(d.weightCap, Math.max(1, vel - this.speedLimit))
-        : Number.isFinite(Number(r.vel)) ? Math.max(1, Number(r.vel)) : 1;
+        : Number.isFinite(Number(r.vel))
+          ? Math.max(1, Number(r.vel))
+          : 1;
 
       points.push([Number(r.lat), Number(r.lon), weight]);
     }

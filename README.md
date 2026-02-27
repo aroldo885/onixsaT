@@ -227,15 +227,15 @@ http://localhost:8081/api/excessos?lastHours=6&officialOnly=0&dedupe=0&speedMin=
 
 Execute manualmente após haver dados em `saida/posicoes.jsonl`:
 
-| Comando | Saída | Descrição |
-| ------- | ----- | --------- |
-| `node scripts/gerar.js relatorio` | `saida/relatorio_hora.csv` | Posições por veículo/hora (CSV) |
-| `node scripts/gerar.js relatorio --format xlsx` | `saida/relatorio_posicoes_hora_a_hora.xlsx` | Mesmo relatório em Excel |
-| `node scripts/gerar.js relatorio --format xlsx --with-placa` | `saida/relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx` | Excel com placa |
-| `node scripts/gerar.js mapa-calor` | `saida/mapa_calor.html` | Heatmap de posições |
-| `node scripts/gerar.js mapa-calor --excesso` | `saida/mapa_calor_excesso_80.html` | Heatmap de excessos (>80) |
-| `node scripts/data.js --compilar` | `saida/historico_posicoes.csv` | Histórico bruto em CSV |
-| `node scripts/data.js --check` | (console) | Diagnóstico rápido dos dados |
+| Comando                                                      | Saída                                                 | Descrição                       |
+| ------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------- |
+| `node scripts/gerar.js relatorio`                            | `saida/relatorio_hora.csv`                            | Posições por veículo/hora (CSV) |
+| `node scripts/gerar.js relatorio --format xlsx`              | `saida/relatorio_posicoes_hora_a_hora.xlsx`           | Mesmo relatório em Excel        |
+| `node scripts/gerar.js relatorio --format xlsx --with-placa` | `saida/relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx` | Excel com placa                 |
+| `node scripts/gerar.js mapa-calor`                           | `saida/mapa_calor.html`                               | Heatmap de posições             |
+| `node scripts/gerar.js mapa-calor --excesso`                 | `saida/mapa_calor_excesso_80.html`                    | Heatmap de excessos (>80)       |
+| `node scripts/data.js --compilar`                            | `saida/historico_posicoes.csv`                        | Histórico bruto em CSV          |
+| `node scripts/data.js --check`                               | (console)                                             | Diagnóstico rápido dos dados    |
 
 Filtros opcionais via `.env`:
 

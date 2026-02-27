@@ -100,7 +100,9 @@ class ExcessosQuery {
 
     const since = ExcessosQuery.parseDateLike(this.req.query?.since);
     const until = ExcessosQuery.parseDateLike(this.req.query?.until);
-    const s = Number.isFinite(since) ? since : now - this._defaults.excessos.fallbackHours * 3600000;
+    const s = Number.isFinite(since)
+      ? since
+      : now - this._defaults.excessos.fallbackHours * 3600000;
     const u = Number.isFinite(until) ? until : now;
     return { since: s, until: u, mode: TimeRangeMode.RANGE };
   }
@@ -119,9 +121,7 @@ class ExcessosQuery {
     const company80 = String(this.req.query?.company80 || "0") === "1";
     const speedMin = Number(this.req.query?.speedMin ?? this.speedMinDefault);
     const maxPoints = Number(this.req.query?.maxPoints ?? this.maxPoints);
-    const dedupeByMid = ExcessosQuery.parseBool(
-      this.req.query?.dedupe ?? this.dedupeByMidDef
-    );
+    const dedupeByMid = ExcessosQuery.parseBool(this.req.query?.dedupe ?? this.dedupeByMidDef);
     const officialOnly = ExcessosQuery.parseBool(
       this.req.query?.officialOnly ?? this.officialOnlyDef
     );
@@ -175,15 +175,12 @@ class ExcessosQuery {
       if (!Number.isFinite(t) || t < since || t > until) continue;
       stats.inRange++;
 
-      if (!company80 && officialOnly && !ExcessosQuery.isExcessoOficial(r))
-        continue;
+      if (!company80 && officialOnly && !ExcessosQuery.isExcessoOficial(r)) continue;
       stats.officialPass++;
 
       const velNum = ExcessosQuery.safeNumber(r.vel);
       const velTxt = ExcessosQuery.extractSpeedFromText(r);
-      const vel = Number.isFinite(velTxt)
-        ? Math.max(velTxt, velNum)
-        : velNum;
+      const vel = Number.isFinite(velTxt) ? Math.max(velTxt, velNum) : velNum;
       if (!Number.isFinite(vel)) continue;
 
       let passSpeed = vel >= speedMin;

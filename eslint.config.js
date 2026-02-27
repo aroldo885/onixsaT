@@ -1,4 +1,5 @@
 const prettier = require("eslint-config-prettier");
+const react = require("eslint-plugin-react");
 
 module.exports = [
   {
@@ -43,6 +44,57 @@ module.exports = [
   },
   prettier,
   {
-    ignores: ["node_modules/", "saida/", "assets/", "*.min.js", ".cursor/"],
+    ignores: [
+      "node_modules/",
+      "saida/",
+      "assets/",
+      "*.min.js",
+      ".cursor/",
+      "frontend/dist/",
+      "frontend/node_modules/",
+    ],
+  },
+  {
+    files: ["frontend/**/*.{js,jsx,mjs}"],
+    plugins: { react },
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+      globals: {
+        document: "readonly",
+        window: "readonly",
+        fetch: "readonly",
+        navigator: "readonly",
+        URLSearchParams: "readonly",
+        console: "readonly",
+        process: "readonly",
+        module: "readonly",
+        require: "readonly",
+        exports: "writable",
+        __dirname: "readonly",
+        Buffer: "readonly",
+        setTimeout: "readonly",
+        setInterval: "readonly",
+        clearTimeout: "readonly",
+        clearInterval: "readonly",
+        Array: "readonly",
+        Object: "readonly",
+        String: "readonly",
+        Number: "readonly",
+        Date: "readonly",
+        JSON: "readonly",
+        Math: "readonly",
+        RegExp: "readonly",
+        Error: "readonly",
+        Promise: "readonly",
+      },
+    },
+    rules: {
+      "react/jsx-uses-vars": "error",
+      "react/jsx-uses-react": "error",
+    },
   },
 ];

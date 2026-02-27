@@ -1,6 +1,7 @@
 node_modules/
 saida/
 assets/
+frontend/dist/
 *.min.js
 package-lock.json
 integracao-onixsat-node-master/

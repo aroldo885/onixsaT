@@ -47,9 +47,7 @@ if (cmd === "mapa-calor") {
   const { create, buildHtml } = require("../src/core/HeatmapGenerator");
   const rest = args.slice(1);
   const mapaArgs = parseMapaCalorArgs(rest);
-  const speedLimit = mapaArgs.excesso
-    ? (mapaArgs.speedLimit ?? heatmap.speedLimit ?? 80)
-    : 0;
+  const speedLimit = mapaArgs.excesso ? (mapaArgs.speedLimit ?? heatmap.speedLimit ?? 80) : 0;
   const opts = {
     posicoesPath,
     mapVeiculosPath: paths.mapVeiculos,
@@ -60,8 +58,7 @@ if (cmd === "mapa-calor") {
   };
   const generator = create(opts);
   const result = generator.generate();
-  const outFileName =
-    speedLimit > 0 ? "mapa_calor_excesso_80.html" : "mapa_calor.html";
+  const outFileName = speedLimit > 0 ? "mapa_calor_excesso_80.html" : "mapa_calor.html";
   const outPath = path.join(paths.outDir, outFileName);
   const html = buildHtml(
     result.title,
@@ -80,24 +77,16 @@ if (cmd === "relatorio") {
   const { create } = require("../src/core/ReportGenerator");
   const rest = args.slice(1);
   const relArgs = parseRelatorioArgs(rest);
-  const format =
-    relArgs.format === "xlsx" ? ReportFormat.XLSX : ReportFormat.CSV;
+  const format = relArgs.format === "xlsx" ? ReportFormat.XLSX : ReportFormat.CSV;
   let outPath;
   if (format === ReportFormat.CSV) {
     outPath = path.join(paths.outDir, "relatorio_hora.csv");
   } else if (relArgs.withPlaca) {
     if (!fs.existsSync(paths.mapVeiculos)) {
-      console.error(
-        "Não achei:",
-        paths.mapVeiculos,
-        "-> Rode npm run onixsat:veiculos primeiro"
-      );
+      console.error("Não achei:", paths.mapVeiculos, "-> Rode npm run onixsat:veiculos primeiro");
       process.exit(1);
     }
-    outPath = path.join(
-      paths.outDir,
-      "relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx"
-    );
+    outPath = path.join(paths.outDir, "relatorio_posicoes_hora_a_hora_COM_PLACA.xlsx");
   } else {
     outPath = path.join(paths.outDir, "relatorio_posicoes_hora_a_hora.xlsx");
   }

@@ -29,9 +29,7 @@ const buscarLocalizacoesEquipamento = async (dadosRastreador, ultimaMensagem) =>
 };
 
 function traduzirEvento(localizacao) {
-  const ignicao = localizacao.hasOwnProperty("evt4")
-    ? Number(localizacao.evt4._text)
-    : -1;
+  const ignicao = localizacao.hasOwnProperty("evt4") ? Number(localizacao.evt4._text) : -1;
   const velocidade = Number(localizacao.vel._text);
   const novoEvento = { tipoMedida: "Status", valor: "" };
   const mapaEventos = [

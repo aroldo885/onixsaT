@@ -95,11 +95,7 @@ class ReportGenerator {
     ];
     const rows = [header.join(";")];
     records.forEach((r) => {
-      rows.push(
-        [r.veiID, r.data, r.hora, r.mun, r.uf, r.vel, r.lat, r.lon, r.via].join(
-          ";"
-        )
-      );
+      rows.push([r.veiID, r.data, r.hora, r.mun, r.uf, r.vel, r.lat, r.lon, r.via].join(";"));
     });
 
     fs.writeFileSync(this.options.outPath, rows.join("\n"), this._defaults.encoding);
